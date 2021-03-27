@@ -1,0 +1,29 @@
+#############################
+## CUSTOMIZE THE WAY YOUR  ##
+##       UHC LOOKS         ##
+#############################
+
+## For ALL options, using colors are supported
+## § - Use this character to denote a color
+default_tab_header: §aU§cH§bC
+default_tab_footer: /helpop <message>
+
+##For the in game tab items, you can use the following to show game data
+## {gameTime} - Shows the time the game has been going on (or this specific episode) and will count up e.g. 21:45
+## {episode} - If episodes are enabled this will display the episode number
+## {remaining} - This will show how many teams or players are left. e.g 5 Teams Remaining e.g 12 Players Remaining
+##
+in_game_tab_header: §aU§cH§bC - Episode {episode}
+in_game_tab_footer: {remaining}
+
+## This controls the title that is sent to players when they join the server
+join_title: §aWELCOME
+join_subtitle: §e{playername}
+
+## If a player is to be kicked after they die, this is the message that will be displayed to them
+## when they are kicked and when they try to rejoin
+kick_message: Thanks for playing UHC, §e{playername}§r \n \n {kickmessage}
+not_whitelisted_message: You are not whitelisted to play this UHC.
+
+##This message will be displayed at the end above the standings
+end_game_title: §aCUSTOM UHC

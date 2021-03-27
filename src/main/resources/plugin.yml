@@ -1,0 +1,68 @@
+name: UHCBase
+version: ${project.version}
+main: joeshuff.plugins.uhcbase.UHCBase
+api-version: 1.15
+commands:
+  worldtp:
+    description: Teleport to a world
+    usage: /<command>
+  dropall:
+    description: drop everything
+    usage: /<command>
+  edituhc:
+    description: Edit UHC rules.
+    usage: /<command>
+  recolor:
+    description: Recolor the existing teams
+    usage: /<command>
+  genteams:
+    description: Randomly Select Teams.
+    usage: /<command> <players per team>
+  clearteams:
+    description: Removes all teams created by this plugin.
+    usage: /<command>
+  createteam:
+    description: Create a team with specific players
+    usage: /<command> <playername> <playername> ...
+  tchat:
+    description: Chat with your teammates
+    usage: /<command>
+  tloc:
+    description: Send your location to teammates.
+    usage: /<command>
+  tl:
+    description: Send your location to teammates.
+    usage: /<command>
+  removeteam:
+    description: Remove a team by name or player
+    usage: /<command> teamname OR /<command> playername
+  teamname:
+    description: Change your teams display name!
+    usage: /<command> new team name
+  worldtest:
+    description: Test to see if the worlds exist.
+    usage: /<command>
+  helpop:
+    description: Ask an operator a question.
+    usage: /<command> <question>
+  pvp:
+    description: Toggle PVP for the world.
+    usage: /<command> <on | off>
+  rules:
+    description: View UHC rules.
+    usage: /<command>
+  showkills:
+    description: Add the kill count to the sidebar.
+    usage: /<command>
+  prepuhc:
+    description: Prepare the world for a UHC.
+    usage: /<command> <world border start size>
+  start-uhc:
+    description: Start the UHC.
+    usage: /<command>
+  stop-uhc:
+    description: Stop the UHC.
+    usage: /<command>
+  loc:
+    description: Gen locations and TP players.
+    usage: /<command>

@@ -1,0 +1,59 @@
+########################
+## JOE SHUFF BASE UHC ##
+########################
+
+
+### UHC FUNCTIONAL SETTINGS ###
+episode-length: 20
+perma-day : true
+perma-day-ep : 5
+should-shrink : false
+shrink-size : 100
+shrink-ep : 3
+shrink-time : 60
+show-episodes: true
+grace-period: true
+grace-end-episode: 2
+###############################
+
+###### WORLD NAMES #######
+UHCWorld : world
+hubWorld : hub
+###########################
+
+#### HUB SPAWN COORDS ####
+hubCentreX : 0
+hubCentreY : 0
+hubCentreZ : 0
+##########################
+
+#### TEAMS SETTING ####
+teams : true
+friendly-fire: true
+#######################
+
+## SEASON SETTINGS ##
+season13: false
+season13-team-size: 2
+season14: true
+season14-radius: 25
+#####################
+
+## NETHER PORTAL RADIUS ##
+nether-enabled : true
+end-enabled: false
+nether-portal-radius : 16
+##########################
+
+####### GAME RULES #######
+apple-rate : 1.0
+pearl-rate : 100.0
+death-lightning : false
+fall-damage : true
+pearl-damage : true
+absorbtion : true
+
+kick-on-death: false
+seconds-until-kick: 30
+can-spectate : true
+##########################
