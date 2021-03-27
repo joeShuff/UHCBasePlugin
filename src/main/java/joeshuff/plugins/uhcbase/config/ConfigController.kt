@@ -43,31 +43,17 @@ class ConfigController(val plugin: JavaPlugin) {
 
     var FRIENDLY_FIRE = ConfigItem(this, "friendly-fire", true)
 
-    var SEASON_13_MODE = ConfigItem(this, "season13", false)
-
-    var SEASON_13_TEAM_SIZE = ConfigItem(this, "season13-team-size", 2, minInt = 1)
-
-    var SEASON_14_MODE = ConfigItem(this, "season14", false)
-
-    var SEASON_14_RADIUS = ConfigItem(this, "season14-radius", 24, minInt = 1)
-
-    var KICK_ON_DEATH = ConfigItem(this, "kick-on-death", false)
-
-    var KICK_SECONDS = ConfigItem(this, "seconds-until-kick", 30, minInt = 1)
+    var KICK_SECONDS = ConfigItem(this, "seconds-until-kick", 30, minInt = 0)
 
     var CAN_SPECTATE = ConfigItem(this, "can-spectate", true)
 
     var NETHER_ENABLED = ConfigItem(this, "nether-enabled", true)
 
-    var NETHER_PORTAL_RADIUS = ConfigItem(this, "nether-portal-radius", 16, minInt = 1)
-
     var END_ENABLED = ConfigItem(this, "end-enabled", false)
 
     var EPISODES_ENABLED = ConfigItem(this, "show-episodes", true)
 
-    var GRACE_PERIOD = ConfigItem(this, "grace-period", true)
-
-    var GRACE_END_EPISODE = ConfigItem(this, "grace-end-episode", 2, minInt = 1)
+    var GRACE_END_EPISODE = ConfigItem(this, "grace-end-episode", 2, minInt = 0)
     //=================
 
     val configItems = listOf(
@@ -79,18 +65,11 @@ class ConfigController(val plugin: JavaPlugin) {
             ABSORBTION,
             TEAMS,
             FRIENDLY_FIRE,
-            SEASON_13_MODE,
-            SEASON_13_TEAM_SIZE,
-            SEASON_14_MODE,
-            SEASON_14_RADIUS,
-            KICK_ON_DEATH,
             KICK_SECONDS,
             CAN_SPECTATE,
             NETHER_ENABLED,
-            NETHER_PORTAL_RADIUS,
             END_ENABLED,
             EPISODES_ENABLED,
-            GRACE_PERIOD,
             GRACE_END_EPISODE
     )
 

@@ -70,10 +70,6 @@ class GenerateLocationsCommand(val plugin: UHCBase): CommandExecutor {
 
         plugin.server.broadcastMessage("${ChatColor.GOLD}Generated Locations")
 
-        if (plugin.getConfigController().SEASON_13_MODE.get()) {
-            respectTeams = false
-        }
-
         plugin.server.broadcastMessage("${ChatColor.GREEN}Beginning teleportations...")
         TeleportingTimer(plugin, respectTeams, generatedLocations).runTaskTimer(plugin, 20, 20)
 

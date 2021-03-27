@@ -2,13 +2,10 @@ package joeshuff.plugins.uhcbase.listeners
 
 import joeshuff.plugins.uhcbase.Constants
 import joeshuff.plugins.uhcbase.UHCBase
-import joeshuff.plugins.uhcbase.VisualEffects
-import joeshuff.plugins.uhcbase.config.ConfigController
 import joeshuff.plugins.uhcbase.config.getConfigController
 import joeshuff.plugins.uhcbase.utils.WorldUtils
 import joeshuff.plugins.uhcbase.utils.sendDefaultTabInfo
 import org.bukkit.Bukkit
-import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.attribute.Attribute
@@ -22,7 +19,6 @@ import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerAdvancementDoneEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.inventory.ItemStack
-import org.bukkit.plugin.java.JavaPlugin
 import kotlin.random.Random
 
 class EntityListener(val plugin: UHCBase): Listener {

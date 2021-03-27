@@ -23,8 +23,6 @@ class CommandController(val plugin: UHCBase) {
 
         plugin.getCommand("worldtp")?.setExecutor(WorldTpCommand(plugin))
 
-        plugin.getCommand("dropall")?.setExecutor(DropAllCommand(plugin))
-
         plugin.getCommand("recolor")?.setExecutor(RecolorCommand(plugin))
 
         plugin.getCommand("clearteams")?.setExecutor(ClearTeamsCommand(plugin))

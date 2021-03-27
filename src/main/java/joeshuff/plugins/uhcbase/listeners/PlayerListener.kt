@@ -169,7 +169,7 @@ class PlayerListener(val plugin: UHCBase): Listener {
             }
         }
 
-        if (plugin.getConfigController().KICK_ON_DEATH.get()) {
+        if (plugin.getConfigController().KICK_SECONDS.get() > 0) {
             if (!offlineKill) {
                 val nowSeconds = (System.currentTimeMillis() / 1000).toInt()
                 val secondsTilKick = plugin.getConfigController().KICK_SECONDS.get()

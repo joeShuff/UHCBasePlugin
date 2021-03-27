@@ -16,9 +16,6 @@ class PortalHandler(val plugin: JavaPlugin): Listener {
 
     @EventHandler
     fun onTeleport(event: PlayerPortalEvent) {
-        event.searchRadius = plugin.getConfigController().NETHER_PORTAL_RADIUS.get()
-        event.creationRadius = plugin.getConfigController().NETHER_PORTAL_RADIUS.get()
-
         if (event.from.world?.environment == World.Environment.NORMAL) {
             if (event.cause == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL) {
                 if (!plugin.getConfigController().NETHER_ENABLED.get()) {

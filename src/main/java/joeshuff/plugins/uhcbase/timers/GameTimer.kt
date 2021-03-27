@@ -18,32 +18,29 @@ import java.util.*
 class GameTimer(
         val plugin: UHCBase
 ): BukkitRunnable() {
-
-    val permaDay: Boolean = plugin.config.getBoolean("perma-day")
     val permaEp: Int = plugin.config.getInt("perma-day-ep")
 
-    val shrink: Boolean = plugin.config.getBoolean("should-shrink")
-    val shrinkSize: Int = plugin.config.getInt("shrink-size")
     val shrinkEp: Int = plugin.config.getInt("shrink-ep")
+    val shrinkSize: Int = plugin.config.getInt("shrink-size")
     val shrinkLength: Int = plugin.config.getInt("shrink-time")
 
-    val graceEnabled: Boolean = plugin.config.getBoolean("grace-period")
     val graceEndEpisode: Int = plugin.config.getInt("grace-end-episode")
 
     val episodeTime: Int = plugin.config.getInt("episode-length")
-
     val episodesEnabled = plugin.getConfigController().EPISODES_ENABLED.get()
 
     init {
         plugin.server.broadcastMessage("UHC Started${if (episodesEnabled) " with Episode length of $episodeTime minute(s)" else ""}")
 
-        val shrinkAt = if (episodesEnabled) {
-            "Episode $shrinkEp"
-        } else {
-            "${shrinkEp * episodeTime} minutes"
-        }
+        if (shrinkEp > 0) {
+            val shrinkAt = if (episodesEnabled) {
+                "Episode $shrinkEp"
+            } else {
+                "${shrinkEp * episodeTime} minutes"
+            }
 
-        plugin.server.broadcastMessage("Shrink at $shrinkAt to ${shrinkSize}x${shrinkSize} and will last $shrinkLength minutes")
+            plugin.server.broadcastMessage("Shrink at $shrinkAt to ${shrinkSize}x${shrinkSize} and will last $shrinkLength minutes")
+        }
 
         plugin.server.onlinePlayers.forEach {
             it.playSound(it.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 10f)
@@ -78,6 +75,48 @@ class GameTimer(
                 .replace("{gameTime}", getFormattedGameTime())
                 .replace("{episode}", "$episodeNumber")
                 .replace("{remaining}", getFormattedRemaining())
+    }
+
+    fun onEpisodeChange(episode: Int) {
+        if (shrinkEp == episode) {
+            plugin.server.broadcastMessage(ChatColor.GOLD.toString() + "======================")
+            plugin.server.broadcastMessage(ChatColor.RED.toString() + "WORLD BORDER SHRINKING TO " + ChatColor.GREEN + shrinkSize + "x" + shrinkSize + " over " + shrinkLength + " minute(s)!")
+            plugin.server.broadcastMessage(ChatColor.GOLD.toString() + "======================")
+
+            plugin.getPlayingWorlds().forEach {
+                it.worldBorder.setSize(shrinkSize.toDouble(), (shrinkLength * 60).toLong())
+            }
+        }
+
+        var subtitle = ""
+        val title = if (plugin.getConfigController().EPISODES_ENABLED.get()) "§9EPISODE §a$episodeNumber §9MARKER" else ""
+
+        if (graceEndEpisode == episode) {
+            plugin.server.broadcastMessage("${ChatColor.YELLOW}PVP has been ${ChatColor.GREEN.toString() + ChatColor.BOLD.toString()}ENABLED")
+        }
+
+        if (permaEp == episode) {
+            plugin.server.broadcastMessage("${ChatColor.GREEN}Perma-Day ${ChatColor.YELLOW}has been enabled.")
+        }
+
+        plugin.getPlayingWorlds().forEach {
+            if (graceEndEpisode == episode) {
+                it.pvp = true
+            }
+
+            if (permaEp == episode) {
+                it.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false)
+                it.time = 0
+            }
+        }
+
+        plugin.server.onlinePlayers.forEach {
+            if (plugin.getConfigController().EPISODES_ENABLED.get()) {
+                it.playSound(it.location, Sound.BLOCK_ANVIL_LAND, 1f, 1f)
+            }
+
+            it.sendTitle(title, subtitle, 10, 70, 20)
+        }
     }
 
     override fun run() {
@@ -148,24 +187,26 @@ class GameTimer(
                     player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
 
                     //TODO: SUPER POWERS GAME MODE HERE
-//                    player.addPotionEffect(effects.random())
-                    player.damage(0.5)
+
+                    player.damage(10.0)
                     player.addPotionEffect(PotionEffect(PotionEffectType.REGENERATION, 100, 10))
-
-                    plugin.server.pluginManager.getPermission("blockBefore.allowed")?.default = PermissionDefault.TRUE
-
-                    val graceEnabled = plugin.getConfigController().GRACE_PERIOD.get()
-
-                    plugin.getPlayingWorlds().forEach {
-                        it.difficulty = Difficulty.HARD
-                        it.time = 0
-                        it.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true)
-
-                        if (graceEnabled) it.pvp = false
-                    }
 
                     //TODO: REMOVE ALL ADVANCEMENTS
                 }
+
+                plugin.server.pluginManager.getPermission("blockBefore.allowed")?.default = PermissionDefault.TRUE
+
+                val graceEnabled = plugin.getConfigController().GRACE_END_EPISODE.get() > 0
+
+                plugin.getPlayingWorlds().forEach {
+                    it.difficulty = Difficulty.HARD
+                    it.time = 0
+                    it.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true)
+
+                    if (graceEnabled) it.pvp = false
+                }
+
+                onEpisodeChange(1)
 
                 plugin.livePlayerListener = PlayerListener(plugin)
             }
@@ -181,53 +222,7 @@ class GameTimer(
                     minutes = 0
                     episodeNumber ++
 
-                    //TODO: MOLES GEN COMMAND
-
-                    //TODO: GENERATE TEAMS SEASON 13
-
-                    if (shrink && shrinkEp == episodeNumber) {
-                        plugin.server.broadcastMessage(ChatColor.GOLD.toString() + "======================")
-                        plugin.server.broadcastMessage(ChatColor.RED.toString() + "WORLD BORDER SHRINKING TO " + ChatColor.GREEN + shrinkSize + "x" + shrinkSize + " over " + shrinkLength + " minute(s)!")
-                        plugin.server.broadcastMessage(ChatColor.GOLD.toString() + "======================")
-
-                        plugin.getPlayingWorlds().forEach {
-                            it.worldBorder.setSize(shrinkSize.toDouble(), (shrinkLength * 60).toLong())
-                        }
-                    }
-
-                    var subtitle = ""
-                    val title = if (plugin.getConfigController().EPISODES_ENABLED.get()) "§9EPISODE §a$episodeNumber §9MARKER" else ""
-
-                    if (graceEnabled && graceEndEpisode == episodeNumber) {
-                        plugin.server.broadcastMessage("${ChatColor.YELLOW}PVP has been ${ChatColor.GREEN.toString() + ChatColor.BOLD.toString()}ENABLED")
-                    }
-
-                    if (permaDay && permaEp == episodeNumber) {
-                        plugin.server.broadcastMessage("${ChatColor.GREEN}Perma-Day ${ChatColor.YELLOW}has been enabled.")
-                    }
-
-                    plugin.getPlayingWorlds().forEach {
-                        if (graceEnabled && graceEndEpisode == episodeNumber) {
-                            it.pvp = true
-                            plugin.server.broadcastMessage("${ChatColor.YELLOW}PVP has been ${ChatColor.GREEN.toString() + ChatColor.BOLD.toString()}ENABLED")
-                        }
-
-                        if (permaDay && permaEp == episodeNumber) {
-                            it.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false)
-
-                            plugin.getPlayingWorlds().forEach { it.time = 0 }
-
-                            plugin.server.broadcastMessage("§aPERMA-DAY ENABLED")
-                        }
-                    }
-
-                    plugin.server.onlinePlayers.forEach {
-                        if (plugin.getConfigController().EPISODES_ENABLED.get()) {
-                            it.playSound(it.location, Sound.BLOCK_ANVIL_LAND, 1f, 1f)
-                        }
-
-                        it.sendTitle(title, subtitle, 10, 70, 20)
-                    }
+                    onEpisodeChange(episodeNumber)
                 }
             }
 

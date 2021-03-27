@@ -97,9 +97,7 @@ class PrepUhcCommand(val plugin: JavaPlugin): CommandExecutor {
         scoreboard.registerNewObjective("health2", "health", "${ChatColor.RED}♥").displaySlot = DisplaySlot.BELOW_NAME
         scoreboard.registerNewObjective("kills", "stat.playerKills", "${ChatColor.RED}-- Kills --").displaySlot = DisplaySlot.SIDEBAR
 
-        val teams = plugin.getConfigController().TEAMS.get() &&
-                !plugin.getConfigController().SEASON_13_MODE.get() &&
-                !plugin.getConfigController().SEASON_14_MODE.get()
+        val teams = plugin.getConfigController().TEAMS.get()
 
         plugin.server.dispatchCommand(plugin.server.consoleSender, "loc $teams")
 

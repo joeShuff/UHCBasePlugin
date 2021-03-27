@@ -4,14 +4,11 @@ main: joeshuff.plugins.uhcbase.UHCBase
 api-version: 1.15
 commands:
   worldtp:
-    description: Teleport to a world
-    usage: /<command>
-  dropall:
-    description: drop everything
-    usage: /<command>
+    description: Teleport to a world. Your coordinates will be the same as the current world.
+    usage: /<command> <world name>
   edituhc:
     description: Edit UHC rules.
-    usage: /<command>
+    usage: "/<command> <rule> <optional: new value>"
   recolor:
     description: Recolor the existing teams
     usage: /<command>
@@ -26,7 +23,7 @@ commands:
     usage: /<command> <playername> <playername> ...
   tchat:
     description: Chat with your teammates
-    usage: /<command>
+    usage: /<command> <message>
   tloc:
     description: Send your location to teammates.
     usage: /<command>
@@ -65,4 +62,4 @@ commands:
     usage: /<command>
   loc:
     description: Gen locations and TP players.
-    usage: /<command>
+    usage: /<command> <respect teams true | false>
