@@ -6,6 +6,7 @@ import joeshuff.plugins.uhcbase.UHCBase
 import joeshuff.plugins.uhcbase.commands.notifyCorrectUsage
 import joeshuff.plugins.uhcbase.config.getConfigController
 import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getPlayingWorlds
+import joeshuff.plugins.uhcbase.utils.removeAllAdvancements
 import org.bukkit.*
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -58,6 +59,8 @@ class PrepUhcCommand(val plugin: JavaPlugin): CommandExecutor {
 
         plugin.server.onlinePlayers.forEach {
             it.teleport(worldCenter)
+
+            it.removeAllAdvancements()
 
             it.inventory.clear()
             it.health = 20.0

@@ -14,7 +14,7 @@ default_tab_footer: /helpop <message>
 ## {remaining} - This will show how many teams or players are left. e.g 5 Teams Remaining e.g 12 Players Remaining
 ##
 in_game_tab_header: §aU§cH§bC - Episode {episode}
-in_game_tab_footer: {remaining}
+in_game_tab_footer: "{remaining}"
 
 ## This controls the title that is sent to players when they join the server
 join_title: §aWELCOME
