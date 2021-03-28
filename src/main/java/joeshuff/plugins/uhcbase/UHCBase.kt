@@ -3,6 +3,8 @@ package joeshuff.plugins.uhcbase
 import joeshuff.plugins.uhcbase.Constants.Companion.loadConstantsFromConfig
 import joeshuff.plugins.uhcbase.commands.CommandController
 import joeshuff.plugins.uhcbase.config.ConfigController
+import joeshuff.plugins.uhcbase.gamemodes.FlowerPower
+import joeshuff.plugins.uhcbase.gamemodes.GamemodeController
 import joeshuff.plugins.uhcbase.listeners.BlockListener
 import joeshuff.plugins.uhcbase.listeners.EntityListener
 import joeshuff.plugins.uhcbase.listeners.PlayerListener
@@ -22,6 +24,8 @@ class UHCBase: JavaPlugin() {
 
     var livePlayerListener: PlayerListener? = null
 
+    val gamemodes = arrayListOf<GamemodeController>()
+
     override fun onEnable() {
         ConfigController(this).initialiseConfigFiles()
         initialisePermissions(this)
@@ -29,6 +33,8 @@ class UHCBase: JavaPlugin() {
 
         Bukkit.createWorld(WorldCreator(Constants.hubWorldName).environment(World.Environment.NORMAL).type(WorldType.FLAT))
         Bukkit.createWorld(WorldCreator(Constants.UHCWorldName))
+
+        gamemodes.add(FlowerPower(this))
 
         //Stop the daylight cycle
         for (world in server.worlds) {

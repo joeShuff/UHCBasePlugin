@@ -73,7 +73,7 @@ class ConfigController(val plugin: JavaPlugin) {
             GRACE_END_EPISODE
     )
 
-    val filesToCreate = listOf("rules.yml", "customize.yml")
+    val filesToCreate = listOf("rules.yml", "customize.yml", "modes.yml")
 
     fun initialiseConfigFiles() {
         plugin.saveDefaultConfig()
