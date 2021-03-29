@@ -22,6 +22,12 @@ Check out the config options in [CONFIG.md](https://github.com/joeShuff/UHCBaseP
 # Gamemodes
 This plugin supports some custom UHC gamemodes, information about these can be found in [GAMEMODES.md](https://github.com/joeShuff/UHCBasePlugin/blob/main/GAMEMODES.md)
 
+# Planned Features
+- Disabling attack cooldown option
+- Forcing surface at a set episode (will have countdown)
+- Clearing nether at a set episode (auto teleport will need to be safe guaranteed)
+- More gamemodes obviously
+
 # Terminology
 Throughout the description of how to use this plugin I will use some concepts that could be interpreted in a few ways. This defines the way **this** plugin understands these concepts to hopefully clear up any confusion.
 
