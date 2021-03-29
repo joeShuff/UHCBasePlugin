@@ -2,6 +2,7 @@ package joeshuff.plugins.uhcbase.utils
 
 import joeshuff.plugins.uhcbase.config.getConfigController
 import org.bukkit.ChatColor
+import org.bukkit.advancement.AdvancementProgress
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
@@ -47,5 +48,14 @@ fun Player.showRules(plugin: JavaPlugin) {
 
     message.split(" _").forEach {
         sendMessage(it)
+    }
+}
+
+fun Player.removeAllAdvancements() {
+    server.advancementIterator().forEach {
+        val advProgress: AdvancementProgress = getAdvancementProgress(it)
+        advProgress.awardedCriteria.forEach {
+            advProgress.revokeCriteria(it)
+        }
     }
 }

@@ -42,7 +42,6 @@ fall-damage : true
 pearl-damage : true
 absorbtion : true
 
-kick-on-death: false
 seconds-until-kick: 30
 can-spectate : true
 ##########################

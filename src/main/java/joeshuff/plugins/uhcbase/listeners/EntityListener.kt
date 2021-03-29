@@ -4,6 +4,7 @@ import joeshuff.plugins.uhcbase.Constants
 import joeshuff.plugins.uhcbase.UHCBase
 import joeshuff.plugins.uhcbase.config.getConfigController
 import joeshuff.plugins.uhcbase.utils.WorldUtils
+import joeshuff.plugins.uhcbase.utils.removeAllAdvancements
 import joeshuff.plugins.uhcbase.utils.sendDefaultTabInfo
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
@@ -54,7 +55,8 @@ class EntityListener(val plugin: UHCBase): Listener {
     @EventHandler
     fun onAchieve(event: PlayerAdvancementDoneEvent) {
         if (!plugin.UHCLive) {
-            //TODO: CANCEL ADVANCEMENT
+            //We are no longer able to stop an advancement from being achieved outside of the UHC
+            //However, all advancements are cleared when the UHC starts so it should be fine to ignore this
         }
     }
 

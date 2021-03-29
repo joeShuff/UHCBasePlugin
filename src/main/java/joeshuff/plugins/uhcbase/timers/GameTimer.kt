@@ -6,6 +6,7 @@ import joeshuff.plugins.uhcbase.config.getConfigController
 import joeshuff.plugins.uhcbase.listeners.PlayerListener
 import joeshuff.plugins.uhcbase.utils.TeamsUtils
 import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getPlayingWorlds
+import joeshuff.plugins.uhcbase.utils.removeAllAdvancements
 import joeshuff.plugins.uhcbase.utils.sendDefaultTabInfo
 import joeshuff.plugins.uhcbase.utils.showRules
 import org.bukkit.*
@@ -49,7 +50,7 @@ class GameTimer(
 
     var episodeNumber = 1
 
-    var effects = Arrays.asList(PotionEffect(PotionEffectType.SPEED, 1000000, 1, false, false), PotionEffect(PotionEffectType.INVISIBILITY, 1000000, 1, false, false), PotionEffect(PotionEffectType.JUMP, 1000000, 2, false, false), PotionEffect(PotionEffectType.HEALTH_BOOST, 1000000, 4, false, false), PotionEffect(PotionEffectType.INCREASE_DAMAGE, 1000000, 0, false, false))
+    var effects = listOf(PotionEffect(PotionEffectType.SPEED, 1000000, 1, false, false), PotionEffect(PotionEffectType.INVISIBILITY, 1000000, 1, false, false), PotionEffect(PotionEffectType.JUMP, 1000000, 2, false, false), PotionEffect(PotionEffectType.HEALTH_BOOST, 1000000, 4, false, false), PotionEffect(PotionEffectType.INCREASE_DAMAGE, 1000000, 0, false, false))
 
     var startSeconds = 10
 
@@ -78,6 +79,9 @@ class GameTimer(
     }
 
     fun onEpisodeChange(episode: Int) {
+
+        plugin.gamemodes.filter { it.isEnabled() }.forEach { it.onEpisodeChange(episode) }
+
         if (shrinkEp == episode) {
             plugin.server.broadcastMessage(ChatColor.GOLD.toString() + "======================")
             plugin.server.broadcastMessage(ChatColor.RED.toString() + "WORLD BORDER SHRINKING TO " + ChatColor.GREEN + shrinkSize + "x" + shrinkSize + " over " + shrinkLength + " minute(s)!")
@@ -120,8 +124,6 @@ class GameTimer(
     }
 
     override fun run() {
-        //TODO: PLUGIN TICK (Season14)
-
         if (!plugin.UHCLive) {
             Bukkit.getServer().broadcastMessage(
                     "${ChatColor.DARK_RED}===============================\n" +
@@ -145,6 +147,8 @@ class GameTimer(
                     otherPlayer.showPlayer(plugin, it)
                 }
             }
+
+            plugin.gamemodes.filter { it.isEnabled() }.forEach { it.onGameEnd() }
 
             this.cancel()
             return
@@ -186,13 +190,11 @@ class GameTimer(
 
                     player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
 
-                    //TODO: SUPER POWERS GAME MODE HERE
-
                     player.damage(10.0)
                     player.addPotionEffect(PotionEffect(PotionEffectType.REGENERATION, 100, 10))
-
-                    //TODO: REMOVE ALL ADVANCEMENTS
                 }
+
+                plugin.gamemodes.filter { it.isEnabled() }.forEach { it.onGameStart() }
 
                 plugin.server.pluginManager.getPermission("blockBefore.allowed")?.default = PermissionDefault.TRUE
 
@@ -213,6 +215,8 @@ class GameTimer(
         }
         else {
             seconds++
+
+            plugin.gamemodes.filter { it.isEnabled() }.forEach { it.gameTick() }
 
             if (seconds == 60) {
                 minutes ++
