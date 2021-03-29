@@ -1,12 +1,10 @@
 package joeshuff.plugins.uhcbase.timers
 
-import joeshuff.plugins.uhcbase.Constants
 import joeshuff.plugins.uhcbase.UHCBase
 import joeshuff.plugins.uhcbase.config.getConfigController
-import joeshuff.plugins.uhcbase.listeners.PlayerListener
-import joeshuff.plugins.uhcbase.utils.TeamsUtils
+import joeshuff.plugins.uhcbase.listeners.GameListener
+import joeshuff.plugins.uhcbase.utils.WorldUtils
 import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getPlayingWorlds
-import joeshuff.plugins.uhcbase.utils.removeAllAdvancements
 import joeshuff.plugins.uhcbase.utils.sendDefaultTabInfo
 import joeshuff.plugins.uhcbase.utils.showRules
 import org.bukkit.*
@@ -14,7 +12,6 @@ import org.bukkit.permissions.PermissionDefault
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
-import java.util.*
 
 class GameTimer(
         val plugin: UHCBase
@@ -123,34 +120,42 @@ class GameTimer(
         }
     }
 
-    override fun run() {
-        if (!plugin.UHCLive) {
-            Bukkit.getServer().broadcastMessage(
-                    "${ChatColor.DARK_RED}===============================\n" +
-                    "${ChatColor.RED}${ChatColor.BOLD}THE UHC HAS BEEN STOPPED!${ChatColor.RESET}${ChatColor.DARK_RED}\n" +
-                    "===============================")
+    fun onUHCStop() {
+        Bukkit.getServer().broadcastMessage("${ChatColor.DARK_RED}===============================\n${ChatColor.RED}${ChatColor.BOLD}THE UHC HAS BEEN STOPPED!${ChatColor.RESET}${ChatColor.DARK_RED}\n===============================")
 
-            val gameOverMessage = plugin.getConfigController().loadConfigFile("customize")?.get("end_game_title")?: "CUSTOM UHC"
+        val gameOverMessage = plugin.getConfigController().loadConfigFile("customize")?.get("end_game_title")?: "CUSTOM UHC"
 
-            Bukkit.getServer().broadcastMessage(ChatColor.GOLD.toString() + "====== " + gameOverMessage + ChatColor.GOLD + " ======")
-            Bukkit.getServer().broadcastMessage(ChatColor.GOLD.toString() + "    1st Place: " + plugin.positionsController?.firstPlace)
-            Bukkit.getServer().broadcastMessage(ChatColor.GRAY.toString() + "    2nd Place: " + plugin.positionsController?.secondPlace)
-            Bukkit.getServer().broadcastMessage(ChatColor.DARK_RED.toString() + "    3rd Place: " + plugin.positionsController?.thirdPlace)
-            Bukkit.getServer().broadcastMessage(ChatColor.GOLD.toString() + "===============================")
+        Bukkit.getServer().broadcastMessage(ChatColor.GOLD.toString() + "====== " + gameOverMessage + ChatColor.GOLD + " ======")
+        Bukkit.getServer().broadcastMessage(ChatColor.GOLD.toString() + "    1st Place: " + plugin.positionsController?.firstPlace)
+        Bukkit.getServer().broadcastMessage(ChatColor.GRAY.toString() + "    2nd Place: " + plugin.positionsController?.secondPlace)
+        Bukkit.getServer().broadcastMessage(ChatColor.DARK_RED.toString() + "    3rd Place: " + plugin.positionsController?.thirdPlace)
+        Bukkit.getServer().broadcastMessage(ChatColor.GOLD.toString() + "===============================")
 
-            plugin.server.onlinePlayers.forEach {
-                it.sendDefaultTabInfo(plugin)
-                it.inventory.clear()
-                it.enderChest.clear()
+        plugin.server.onlinePlayers.forEach {
+            it.sendDefaultTabInfo(plugin)
+            it.inventory.clear()
+            it.enderChest.clear()
 
-                plugin.server.onlinePlayers.forEach { otherPlayer ->
-                    otherPlayer.showPlayer(plugin, it)
-                }
+            plugin.server.onlinePlayers.forEach { otherPlayer ->
+                otherPlayer.showPlayer(plugin, it)
+                it.showPlayer(plugin, otherPlayer)
             }
 
-            plugin.gamemodes.filter { it.isEnabled() }.forEach { it.onGameEnd() }
+            it.teleport(WorldUtils.getHubSpawnLocation())
+            it.gameMode = GameMode.ADVENTURE
+        }
 
-            this.cancel()
+        plugin.gamemodes.filter { it.isEnabled() }.forEach { it.onGameEnd() }
+
+        plugin.UHCVictoryLap = false
+        plugin.UHCPrepped = false
+
+        this.cancel()
+    }
+
+    override fun run() {
+        if (!plugin.UHCLive) {
+            onUHCStop()
             return
         }
 
@@ -210,7 +215,7 @@ class GameTimer(
 
                 onEpisodeChange(1)
 
-                plugin.livePlayerListener = PlayerListener(plugin)
+                plugin.liveGameListener = GameListener(plugin)
             }
         }
         else {

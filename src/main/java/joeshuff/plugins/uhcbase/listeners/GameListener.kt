@@ -23,7 +23,7 @@ import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class PlayerListener(val plugin: UHCBase): Listener {
+class GameListener(val plugin: UHCBase): Listener {
 
     var deadList: ArrayList<String> = ArrayList()
     var playingList: ArrayList<String> = ArrayList()
@@ -127,7 +127,7 @@ class PlayerListener(val plugin: UHCBase): Listener {
             spawnLoc.y = 20.0
         }
 
-//        Season14.death(player)
+        plugin.gamemodes.filter { it.isEnabled() }.forEach { it.playerDeath(player) }
 
         player.setBedSpawnLocation(spawnLoc, true)
 
@@ -146,6 +146,10 @@ class PlayerListener(val plugin: UHCBase): Listener {
                     player.gameMode = GameMode.SPECTATOR
                 }
             }
+        }
+
+        if (plugin.UHCVictoryLap) {
+            return
         }
 
         var killer = "Entity"
@@ -207,6 +211,11 @@ class PlayerListener(val plugin: UHCBase): Listener {
 
         if (event is EntityDamageByEntityEvent) return
 
+        if (plugin.UHCVictoryLap) {
+            event.isCancelled = true
+            return
+        }
+
         if (event.cause == EntityDamageEvent.DamageCause.FALL) {
             if (!plugin.getConfigController().FALL_DAMAGE.get()) {
                 event.isCancelled = true
@@ -241,6 +250,11 @@ class PlayerListener(val plugin: UHCBase): Listener {
 
     @EventHandler
     fun entityDamagedByEntity(event: EntityDamageByEntityEvent) {
+        if (plugin.UHCVictoryLap) {
+            event.isCancelled = true
+            return
+        }
+
         if (event.damager is Arrow && event.entity is Player) {
             val damaged = event.entity as Player
             val arrow = event.damager as Arrow

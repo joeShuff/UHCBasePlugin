@@ -8,7 +8,6 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 
 class TeamNameCommand(val plugin: UHCBase): CommandExecutor {
 
@@ -18,7 +17,7 @@ class TeamNameCommand(val plugin: UHCBase): CommandExecutor {
             return true
         }
 
-        plugin.livePlayerListener?.let {
+        plugin.liveGameListener?.let {
             if (it.deadList.contains(sender.name)) {
                 sender.sendMessage("${ChatColor.RED}You can't change the team name when you are dead")
                 return true
@@ -48,7 +47,7 @@ class TeamNameCommand(val plugin: UHCBase): CommandExecutor {
 
             team.entries.forEach {teamEntry ->
                 Bukkit.getPlayer(teamEntry)?.let { teamPlayer ->
-                    teamPlayer.sendMessage("${ChatColor.GREEN}Team name changed to ${team.color}${newTeamName}")
+                    teamPlayer.sendMessage("${ChatColor.GREEN}Team name changed to ${team.color}${newTeamName}${ChatColor.GREEN} by ${team.color}${sender.displayName}")
                 }
             }
         }?: run {

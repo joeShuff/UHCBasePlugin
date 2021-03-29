@@ -1,5 +1,6 @@
 package joeshuff.plugins.uhcbase.gamemodes
 
+import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
 interface GamemodeController {
@@ -13,4 +14,6 @@ interface GamemodeController {
     fun isEnabled(): Boolean
 
     fun gameTick() {}
+
+    fun playerDeath(player: Player) {}
 }

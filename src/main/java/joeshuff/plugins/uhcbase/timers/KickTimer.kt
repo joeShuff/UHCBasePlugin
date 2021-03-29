@@ -1,16 +1,12 @@
 package joeshuff.plugins.uhcbase.timers
 
-import joeshuff.plugins.uhcbase.UHCBase
 import joeshuff.plugins.uhcbase.config.getConfigController
-import joeshuff.plugins.uhcbase.listeners.PlayerListener
-import org.bukkit.Bukkit
-import org.bukkit.ChatColor
-import org.bukkit.WorldCreator
+import joeshuff.plugins.uhcbase.listeners.GameListener
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import java.util.*
 
-class KickTimer(val listener: PlayerListener): BukkitRunnable() {
+class KickTimer(val listener: GameListener): BukkitRunnable() {
 
     companion object {
         /** Seconds til logged out players are killed **/

@@ -16,6 +16,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityDeathEvent
+import org.bukkit.event.entity.EntitySpawnEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerAdvancementDoneEvent
 import org.bukkit.event.player.PlayerJoinEvent
@@ -57,6 +58,13 @@ class EntityListener(val plugin: UHCBase): Listener {
         if (!plugin.UHCLive) {
             //We are no longer able to stop an advancement from being achieved outside of the UHC
             //However, all advancements are cleared when the UHC starts so it should be fine to ignore this
+        }
+    }
+
+    @EventHandler
+    fun entitySpawn(event: EntitySpawnEvent) {
+        if (event.location.world?.name == Constants.hubWorldName) {
+            event.isCancelled = true
         }
     }
 

@@ -31,7 +31,7 @@ class TeamChatCommand(val plugin: JavaPlugin): CommandExecutor {
 
             team.entries.forEach {entryName ->
                 plugin.server.getPlayer(entryName)?.let {teammate ->
-                    teammate.sendMessage("${ChatColor.GREEN}[TEAM] ${sender.displayName}${ChatColor.GRAY} > ${ChatColor.WHITE}$message")
+                    teammate.sendMessage("${ChatColor.GREEN}[TEAM] ${sender.displayName}${ChatColor.GRAY}> ${ChatColor.WHITE}$message")
                 }
             }
         }?: run {

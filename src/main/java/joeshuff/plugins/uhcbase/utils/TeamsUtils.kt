@@ -92,7 +92,7 @@ class TeamsUtils {
 
                 val alreadyChosenStyles = arrayListOf<String>()
 
-                for (teamId in 0..amountOfTeams) {
+                for (teamId in 0 until amountOfTeams) {
                     val newTeam = board.registerNewTeam("team_$teamId")
 
                     var color = getTeamColor()
@@ -111,17 +111,19 @@ class TeamsUtils {
                     newTeam.setCanSeeFriendlyInvisibles(true)
                     newTeam.setAllowFriendlyFire(plugin.getConfigController().FRIENDLY_FIRE.get())
 
-                    val playersWithoutATeam = players.filter { board.getEntryTeam(it.name) == null }
+                    (0 until playersPerTeam).forEach {
+                        val playersWithoutATeam = players.filter { board.getEntryTeam(it.name) == null }
 
-                    if (playersWithoutATeam.isNotEmpty()) {
-                        val theChosenOne = playersWithoutATeam.random()
-                        newTeam.addEntry(theChosenOne.displayName)
+                        if (playersWithoutATeam.isNotEmpty()) {
+                            val theChosenOne = playersWithoutATeam.random()
+                            newTeam.addEntry(theChosenOne.displayName)
 
-                        theChosenOne.sendMessage("${ChatColor.BOLD.toString() + ChatColor.GOLD.toString()}You have been added to ${color}Team $teamId")
+                            theChosenOne.sendMessage("${ChatColor.BOLD.toString() + ChatColor.GOLD.toString()}You have been added to ${color}Team $teamId")
+                        }
                     }
                 }
 
-                Bukkit.getServer().broadcastMessage(ChatColor.GREEN.toString() + "Successfully randomized $amountOfTeams players onto $amountOfTeams teams")
+                Bukkit.getServer().broadcastMessage(ChatColor.GREEN.toString() + "Successfully randomized ${players.size} player(s) onto $amountOfTeams team(s)")
 
                 return true
             }

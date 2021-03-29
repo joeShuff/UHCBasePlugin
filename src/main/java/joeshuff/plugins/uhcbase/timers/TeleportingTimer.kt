@@ -1,7 +1,6 @@
 package joeshuff.plugins.uhcbase.timers
 
 import joeshuff.plugins.uhcbase.UHCBase
-import joeshuff.plugins.uhcbase.listeners.PlayerListener
 import joeshuff.plugins.uhcbase.utils.TeamsUtils
 import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getPlayingWorlds
 import org.bukkit.Bukkit
@@ -9,7 +8,6 @@ import org.bukkit.ChatColor
 import org.bukkit.Difficulty
 import org.bukkit.Location
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
@@ -28,7 +26,7 @@ class TeleportingTimer(val plugin: UHCBase, val respectTeams: Boolean, val locat
         players.addAll(plugin.server.onlinePlayers)
 
         players.forEach {
-            plugin.livePlayerListener?.playingList?.add(it.name)
+            plugin.liveGameListener?.playingList?.add(it.name)
         }
 
         plugin.getPlayingWorlds().forEach { it.difficulty = Difficulty.PEACEFUL }

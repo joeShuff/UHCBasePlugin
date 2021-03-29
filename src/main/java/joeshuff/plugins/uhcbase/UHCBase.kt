@@ -7,7 +7,7 @@ import joeshuff.plugins.uhcbase.gamemodes.FlowerPower
 import joeshuff.plugins.uhcbase.gamemodes.GamemodeController
 import joeshuff.plugins.uhcbase.listeners.BlockListener
 import joeshuff.plugins.uhcbase.listeners.EntityListener
-import joeshuff.plugins.uhcbase.listeners.PlayerListener
+import joeshuff.plugins.uhcbase.listeners.GameListener
 import joeshuff.plugins.uhcbase.listeners.PortalHandler
 import joeshuff.plugins.uhcbase.permissions.Permissions.Companion.initialisePermissions
 import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getHubWorld
@@ -19,10 +19,10 @@ class UHCBase: JavaPlugin() {
 
     var UHCPrepped = false
     var UHCLive = false
+    var UHCVictoryLap = false
 
     var positionsController: PositionsController? = null
-
-    var livePlayerListener: PlayerListener? = null
+    var liveGameListener: GameListener? = null
 
     val gamemodes = arrayListOf<GamemodeController>()
 
