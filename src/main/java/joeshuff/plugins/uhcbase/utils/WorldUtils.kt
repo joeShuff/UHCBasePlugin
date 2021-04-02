@@ -5,6 +5,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.World
 import org.bukkit.plugin.java.JavaPlugin
+import java.lang.Exception
 
 class WorldUtils {
     companion object {
@@ -30,6 +31,14 @@ class WorldUtils {
 
         fun JavaPlugin.getHubWorld(): World? {
             return server.worlds.firstOrNull { it.name == Constants.hubWorldName }
+        }
+
+        fun String.toSeed(): Long {
+            return try {
+                toLong()
+            } catch (ex: Exception) {
+                this.hashCode().toLong()
+            }
         }
     }
 }

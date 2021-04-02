@@ -27,6 +27,8 @@ class ConfigController(val plugin: JavaPlugin) {
     }
 
     //====GAME DATA=====
+    var UHC_WORLD_SEED = ConfigItem<String>(this, "UHCSeed", "none")
+
     var APPLE_RATE = ConfigItem<Double>(this, "apple-rate", 0.5, minDouble = 0.0, maxDouble = 100.0)
 
     var PEARL_RATE = ConfigItem<Double>(this, "pearl-rate", 0.5, minDouble = 0.0, maxDouble = 100.0)
