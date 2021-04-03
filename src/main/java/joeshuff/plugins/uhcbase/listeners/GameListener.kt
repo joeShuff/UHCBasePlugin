@@ -37,6 +37,10 @@ class GameListener(val plugin: UHCBase): Listener {
     init {
         plugin.server.pluginManager.registerEvents(this, plugin)
         kickTimer = KickTimer(this)
+
+        plugin.server.onlinePlayers.forEach {
+            playingList.add(it.name)
+        }
     }
 
     fun stop() {
