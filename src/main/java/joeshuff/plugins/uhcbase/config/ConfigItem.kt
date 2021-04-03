@@ -6,7 +6,8 @@ class ConfigItem<T>(private val controller: ConfigController,
                     private val minInt: Int? = null,
                     private val maxInt: Int? = null,
                     private val minDouble: Double? = null,
-                    private val maxDouble: Double? = null) {
+                    private val maxDouble: Double? = null,
+                    private val onSet: ((T) -> Unit)? = null) {
 
     fun get(): T {
         return controller.getFromConfig(configKey) as T?: default
@@ -16,6 +17,7 @@ class ConfigItem<T>(private val controller: ConfigController,
 
     fun set(value: Any) {
         controller.setToConfig(configKey, value)
+        onSet?.invoke(get())
     }
 
     fun getLimits(): String {

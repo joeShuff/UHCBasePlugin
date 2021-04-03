@@ -33,7 +33,7 @@ class EntityListener(val plugin: UHCBase): Listener {
     fun onPlayerJoin(event: PlayerJoinEvent) {
         val player = event.player
 
-        player.getAttribute(Attribute.GENERIC_ATTACK_SPEED)?.baseValue = 16.0
+        player.getAttribute(Attribute.GENERIC_ATTACK_SPEED)?.baseValue = if (plugin.getConfigController().ONE_POINT_EIGHT_PVP.get()) 16.0 else 4.0
 
         plugin.getConfigController().loadConfigFile("customize")?.let {
             var title = it.getString("join_title")?: ""
