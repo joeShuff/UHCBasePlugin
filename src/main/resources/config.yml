@@ -15,12 +15,13 @@ grace-end-episode: 2
 
 ###### WORLD NAMES #######
 UHCWorld : world
+UHCSeed: none
 hubWorld : hub
 ###########################
 
 #### HUB SPAWN COORDS ####
 hubCentreX : 0
-hubCentreY : 0
+hubCentreY : -1
 hubCentreZ : 0
 ##########################
 
