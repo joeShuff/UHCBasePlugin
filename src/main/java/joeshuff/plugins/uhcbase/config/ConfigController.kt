@@ -63,6 +63,12 @@ class ConfigController(val plugin: JavaPlugin) {
             it.getAttribute(Attribute.GENERIC_ATTACK_SPEED)?.baseValue = if (value) 16.0 else 4.0
         }
     }
+
+    var PREGEN_TICKS = ConfigItem(this, "pregen-ticks", 20, minInt = 1)
+
+    var TELEPORT_SIZE = ConfigItem(this, "teleport-size", 5, minInt = 1)
+
+    var TELEPORT_DELAY = ConfigItem(this, "teleport-delay", 4, minInt = 1)
     //=================
 
     val configItems = listOf(
@@ -80,7 +86,10 @@ class ConfigController(val plugin: JavaPlugin) {
             END_ENABLED,
             EPISODES_ENABLED,
             GRACE_END_EPISODE,
-            ONE_POINT_EIGHT_PVP
+            ONE_POINT_EIGHT_PVP,
+            TELEPORT_DELAY,
+            PREGEN_TICKS,
+            TELEPORT_SIZE
     )
 
     val filesToCreate = listOf("rules.yml", "customize.yml", "modes.yml")
