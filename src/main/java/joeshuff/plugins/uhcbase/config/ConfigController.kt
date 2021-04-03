@@ -1,5 +1,6 @@
 package joeshuff.plugins.uhcbase.config
 
+import org.bukkit.attribute.Attribute
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
@@ -56,6 +57,12 @@ class ConfigController(val plugin: JavaPlugin) {
     var EPISODES_ENABLED = ConfigItem(this, "show-episodes", true)
 
     var GRACE_END_EPISODE = ConfigItem(this, "grace-end-episode", 2, minInt = 0)
+
+    var ONE_POINT_EIGHT_PVP = ConfigItem(this, "1-8-pvp", false) {value ->
+        plugin.server.onlinePlayers.forEach {
+            it.getAttribute(Attribute.GENERIC_ATTACK_SPEED)?.baseValue = if (value) 16.0 else 4.0
+        }
+    }
     //=================
 
     val configItems = listOf(
@@ -72,7 +79,8 @@ class ConfigController(val plugin: JavaPlugin) {
             NETHER_ENABLED,
             END_ENABLED,
             EPISODES_ENABLED,
-            GRACE_END_EPISODE
+            GRACE_END_EPISODE,
+            ONE_POINT_EIGHT_PVP
     )
 
     val filesToCreate = listOf("rules.yml", "customize.yml", "modes.yml")

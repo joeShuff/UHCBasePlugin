@@ -23,9 +23,9 @@ Check out the config options in [CONFIG.md](https://github.com/joeShuff/UHCBaseP
 This plugin supports some custom UHC gamemodes, information about these can be found in [GAMEMODES.md](https://github.com/joeShuff/UHCBasePlugin/blob/main/GAMEMODES.md)
 
 # Planned Features
-- Pregeneration of chunks
+- ~~Pregeneration of chunks~~
 - Player heads on death + craft golden head
-- Disabling attack cooldown option
+- ~~Disabling attack cooldown option~~ 
 - Forcing surface at a set episode (will have countdown)
 - Clearing nether at a set episode (auto teleport will need to be safe guaranteed)
 - More gamemodes obviously

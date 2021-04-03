@@ -42,6 +42,7 @@ death-lightning : false
 fall-damage : true
 pearl-damage : true
 absorbtion : true
+1-8-pvp: false
 
 seconds-until-kick: 30
 can-spectate : true
