@@ -19,7 +19,7 @@ import java.lang.Integer.min
 class TeleportingTimer(val plugin: UHCBase, val locations: ArrayList<GenerateLocationsCommand.PlayerDestination>): BukkitRunnable() {
     val groupAmount = plugin.getConfigController().TELEPORT_SIZE.get()
 
-    var seconds = 1
+    var seconds = 0
 
     var amountTeleportingThisTime = 0
 
@@ -34,18 +34,18 @@ class TeleportingTimer(val plugin: UHCBase, val locations: ArrayList<GenerateLoc
     }
 
     override fun run() {
-        if (locations.isEmpty()) {
-            plugin.server.broadcastMessage("${ChatColor.GREEN}All players have been teleported");
-            this.cancel()
-            return
-        }
-
         when (seconds) {
             0 -> {
                 amountTeleportingThisTime = min(locations.size, groupAmount)
                 plugin.server.broadcastMessage("${ChatColor.YELLOW}Prepping teleport for ${ChatColor.RED}$amountTeleportingThisTime people.")
 
                 (0..amountTeleportingThisTime).forEach {
+                    if (locations.isEmpty()) {
+                        plugin.server.broadcastMessage("${ChatColor.GREEN}All players have been teleported");
+                        this.cancel()
+                        return
+                    }
+
                     val thisTeleportation = locations.removeAt(0)
 
                     with (thisTeleportation.player) {
