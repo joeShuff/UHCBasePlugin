@@ -66,3 +66,6 @@ commands:
   pregen:
     description: Pregenerate chunks in a set diameter
     usage: /<command> <diamater to generate, centered on 0,0>
+  stop-pregen:
+    description: Stop any pregeneration tasks.
+    usage: /<command>

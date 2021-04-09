@@ -24,6 +24,7 @@ class CommandController(val plugin: UHCBase) {
         plugin.getCommand("worldtp")?.setExecutor(WorldTpCommand(plugin))
 
         plugin.getCommand("pregen")?.setExecutor(PregenerateChunksCommand(plugin))
+        plugin.getCommand("stop-pregen")?.setExecutor(StopPregenerationCommand(plugin))
 
         plugin.getCommand("recolor")?.setExecutor(RecolorCommand(plugin))
 

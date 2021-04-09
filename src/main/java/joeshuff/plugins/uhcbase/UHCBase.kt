@@ -11,6 +11,7 @@ import joeshuff.plugins.uhcbase.listeners.EntityListener
 import joeshuff.plugins.uhcbase.listeners.GameListener
 import joeshuff.plugins.uhcbase.listeners.PortalHandler
 import joeshuff.plugins.uhcbase.permissions.Permissions.Companion.initialisePermissions
+import joeshuff.plugins.uhcbase.timers.PregenerationTimer
 import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getHubWorld
 import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.toSeed
 import joeshuff.plugins.uhcbase.utils.sendDefaultTabInfo
@@ -26,6 +27,8 @@ class UHCBase: JavaPlugin() {
 
     var positionsController: PositionsController? = null
     var liveGameListener: GameListener? = null
+
+    var ongoingPregenerationTimer: PregenerationTimer? = null
 
     val gamemodes = arrayListOf<GamemodeController>()
 
