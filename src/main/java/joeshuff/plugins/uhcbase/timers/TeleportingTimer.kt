@@ -37,26 +37,27 @@ class TeleportingTimer(val plugin: UHCBase, val locations: ArrayList<GenerateLoc
         when (seconds) {
             0 -> {
                 amountTeleportingThisTime = min(locations.size, groupAmount)
-                plugin.server.broadcastMessage("${ChatColor.YELLOW}Prepping teleport for ${ChatColor.RED}$amountTeleportingThisTime people.")
+                plugin.server.broadcastMessage("${ChatColor.YELLOW}Prepping teleport for ${ChatColor.RED}$amountTeleportingThisTime ${if (amountTeleportingThisTime == 1) "person" else "people"}.")
 
-                (0..amountTeleportingThisTime).forEach {
+                (0 until amountTeleportingThisTime).forEach {
+                    val thisTeleportation = locations.removeFirstOrNull()
+
+                    thisTeleportation?.player?.let {
+                        it.teleport(thisTeleportation.location)
+                        plugin.server.broadcastMessage("${ChatColor.YELLOW}${it.name}${ChatColor.WHITE} has been teleported")
+                    }
+
                     if (locations.isEmpty()) {
                         plugin.server.broadcastMessage("${ChatColor.GREEN}All players have been teleported");
                         this.cancel()
                         return
                     }
-
-                    val thisTeleportation = locations.removeAt(0)
-
-                    with (thisTeleportation.player) {
-                        teleport(thisTeleportation.location)
-                        plugin.server.broadcastMessage("${ChatColor.YELLOW}${name}${ChatColor.WHITE} has been teleported")
-                    }
                 }
             }
-            TELEPORT_DELAY -> { seconds = 0 }
+            TELEPORT_DELAY -> { seconds = -1 }
         }
 
+        plugin.logger.info("Teleport delay $seconds")
         seconds ++
     }
 

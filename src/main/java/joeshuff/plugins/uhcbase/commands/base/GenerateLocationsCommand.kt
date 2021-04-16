@@ -87,7 +87,7 @@ class GenerateLocationsCommand(val plugin: UHCBase): CommandExecutor {
 
         plugin.server.broadcastMessage("${ChatColor.GOLD}Generated Locations")
         plugin.server.broadcastMessage("${ChatColor.GREEN}Beginning teleportations...")
-        TeleportingTimer(plugin, playerLocations).runTaskTimer(plugin, 20, 20)
+        TeleportingTimer(plugin, playerLocations).runTaskTimer(plugin, 40, 20)
 
         return true
     }
