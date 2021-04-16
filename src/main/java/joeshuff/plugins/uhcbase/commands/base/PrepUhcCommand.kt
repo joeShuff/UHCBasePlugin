@@ -5,6 +5,7 @@ import joeshuff.plugins.uhcbase.PositionsController
 import joeshuff.plugins.uhcbase.UHCBase
 import joeshuff.plugins.uhcbase.commands.notifyCorrectUsage
 import joeshuff.plugins.uhcbase.config.getConfigController
+import joeshuff.plugins.uhcbase.utils.TeamsUtils
 import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getPlayingWorlds
 import joeshuff.plugins.uhcbase.utils.removeAllAdvancements
 import org.bukkit.*
@@ -32,6 +33,13 @@ class PrepUhcCommand(val plugin: JavaPlugin): CommandExecutor {
         }
 
         if (args.isEmpty()) return command.notifyCorrectUsage(sender)
+
+        val teams = plugin.getConfigController().TEAMS.get()
+
+        if (teams && TeamsUtils.getOnlineTeams().isEmpty()) {
+            sender.sendMessage("${ChatColor.RED}The game is configured to use teams but there are no teams. Either set teams to false or generate some teams.")
+            return true
+        }
 
         val world = Bukkit.getWorld(Constants.UHCWorldName)
 
@@ -99,8 +107,6 @@ class PrepUhcCommand(val plugin: JavaPlugin): CommandExecutor {
         scoreboard.registerNewObjective("health1", "health", "listhealth", RenderType.HEARTS).displaySlot = DisplaySlot.PLAYER_LIST
         scoreboard.registerNewObjective("health2", "health", "${ChatColor.RED}♥").displaySlot = DisplaySlot.BELOW_NAME
         scoreboard.registerNewObjective("kills", "stat.playerKills", "${ChatColor.RED}-- Kills --").displaySlot = DisplaySlot.SIDEBAR
-
-        val teams = plugin.getConfigController().TEAMS.get()
 
         plugin.server.dispatchCommand(plugin.server.consoleSender, "loc $teams")
 

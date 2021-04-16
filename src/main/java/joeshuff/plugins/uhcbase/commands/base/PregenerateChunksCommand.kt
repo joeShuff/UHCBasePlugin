@@ -4,6 +4,7 @@ import joeshuff.plugins.uhcbase.Constants
 import joeshuff.plugins.uhcbase.UHCBase
 import joeshuff.plugins.uhcbase.commands.notifyCorrectUsage
 import joeshuff.plugins.uhcbase.timers.PregenerationTimer
+import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -24,8 +25,13 @@ class PregenerateChunksCommand(val plugin: UHCBase): CommandExecutor {
             return command.notifyCorrectUsage(sender)
         }
 
+        plugin.ongoingPregenerationTimer?.let {
+            sender.sendMessage("${ChatColor.RED}There is currently an ongoing pregeneration task")
+            return true
+        }
+
         plugin.server.getWorld(Constants.UHCWorldName)?.let {
-            PregenerationTimer(plugin, args[0].toInt())
+            plugin.ongoingPregenerationTimer = PregenerationTimer(plugin, args[0].toInt())
         }?: run {
             sender.sendMessage("${ChatColor.RED}Cannot find UHC world ${ChatColor.ITALIC}${Constants.UHCWorldName}")
             return true
