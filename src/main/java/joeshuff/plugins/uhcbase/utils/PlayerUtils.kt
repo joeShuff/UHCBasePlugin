@@ -30,7 +30,7 @@ fun Player.showRules(plugin: JavaPlugin) {
 
     val rulesList = (rulesConfig.getString("rules")?: "").split(",")
 
-    var message = "${ChatColor.RED} =======- RULES -======= _".trimIndent()
+    var message = "${ChatColor.RED}=======- RULES -======= _".trimIndent()
 
     for (rule in rulesList) {
         message = "$message${ChatColor.GOLD}• ${ChatColor.YELLOW}${rule.trim()} _".trimIndent()
@@ -44,6 +44,8 @@ fun Player.showRules(plugin: JavaPlugin) {
     message = "$message${ChatColor.YELLOW}Fall Damage: ${ChatColor.AQUA}${plugin.getConfigController().FALL_DAMAGE.get()} _".trimIndent()
     message = "$message${ChatColor.YELLOW}Pearl Damage: ${ChatColor.AQUA}${plugin.getConfigController().PEARL_DAMAGE.get()} _".trimIndent()
     message = "$message${ChatColor.YELLOW}Death Lightning: ${ChatColor.AQUA}${plugin.getConfigController().DEATH_LIGHTNING.get()} _".trimIndent()
+    message = "$message${ChatColor.YELLOW}Nether Enabled: ${ChatColor.AQUA}${plugin.getConfigController().NETHER_ENABLED.get()} _".trimIndent()
+    message = "$message${ChatColor.YELLOW}End Enabled: ${ChatColor.AQUA}${plugin.getConfigController().END_ENABLED.get()} _".trimIndent()
     message = "$message${ChatColor.BLUE}====================="
 
     message.split(" _").forEach {

@@ -11,16 +11,20 @@ shrink-ep : 3
 shrink-time : 60
 show-episodes: true
 grace-end-episode: 2
+pregen-ticks: 20
+teleport-size: 5
+teleport-delay: 4
 ###############################
 
 ###### WORLD NAMES #######
 UHCWorld : world
+UHCSeed: none
 hubWorld : hub
 ###########################
 
 #### HUB SPAWN COORDS ####
 hubCentreX : 0
-hubCentreY : 0
+hubCentreY : -1
 hubCentreZ : 0
 ##########################
 
@@ -41,6 +45,7 @@ death-lightning : false
 fall-damage : true
 pearl-damage : true
 absorbtion : true
+1-8-pvp: false
 
 seconds-until-kick: 30
 can-spectate : true

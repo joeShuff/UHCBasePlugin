@@ -55,7 +55,7 @@ class StopUhcCommand(val plugin: JavaPlugin): CommandExecutor {
 
 //        Season14.nominated = ArrayList()
 
-        plugin.livePlayerListener?.stop()
+        plugin.liveGameListener?.stop()
 
         plugin.getServer().pluginManager.getPermission("blockBefore.allowed")?.default = PermissionDefault.FALSE
 

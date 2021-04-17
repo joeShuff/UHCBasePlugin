@@ -1,5 +1,6 @@
 package joeshuff.plugins.uhcbase.config
 
+import org.bukkit.attribute.Attribute
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
@@ -27,6 +28,8 @@ class ConfigController(val plugin: JavaPlugin) {
     }
 
     //====GAME DATA=====
+    var UHC_WORLD_SEED = ConfigItem<String>(this, "UHCSeed", "none")
+
     var APPLE_RATE = ConfigItem<Double>(this, "apple-rate", 0.5, minDouble = 0.0, maxDouble = 100.0)
 
     var PEARL_RATE = ConfigItem<Double>(this, "pearl-rate", 0.5, minDouble = 0.0, maxDouble = 100.0)
@@ -54,6 +57,18 @@ class ConfigController(val plugin: JavaPlugin) {
     var EPISODES_ENABLED = ConfigItem(this, "show-episodes", true)
 
     var GRACE_END_EPISODE = ConfigItem(this, "grace-end-episode", 2, minInt = 0)
+
+    var ONE_POINT_EIGHT_PVP = ConfigItem(this, "1-8-pvp", false) {value ->
+        plugin.server.onlinePlayers.forEach {
+            it.getAttribute(Attribute.GENERIC_ATTACK_SPEED)?.baseValue = if (value) 16.0 else 4.0
+        }
+    }
+
+    var PREGEN_TICKS = ConfigItem(this, "pregen-ticks", 20, minInt = 1)
+
+    var TELEPORT_SIZE = ConfigItem(this, "teleport-size", 5, minInt = 1)
+
+    var TELEPORT_DELAY = ConfigItem(this, "teleport-delay", 4, minInt = 1)
     //=================
 
     val configItems = listOf(
@@ -70,7 +85,11 @@ class ConfigController(val plugin: JavaPlugin) {
             NETHER_ENABLED,
             END_ENABLED,
             EPISODES_ENABLED,
-            GRACE_END_EPISODE
+            GRACE_END_EPISODE,
+            ONE_POINT_EIGHT_PVP,
+            TELEPORT_DELAY,
+            PREGEN_TICKS,
+            TELEPORT_SIZE
     )
 
     val filesToCreate = listOf("rules.yml", "customize.yml", "modes.yml")

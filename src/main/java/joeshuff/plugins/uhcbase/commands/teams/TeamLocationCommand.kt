@@ -24,18 +24,21 @@ class TeamLocationCommand(val plugin: JavaPlugin): CommandExecutor {
 
         scoreboard.getEntryTeam(sender.name)?.let { team ->
             val senderLocation = sender.location
-            var message = "X: ${senderLocation.blockX} Y: ${senderLocation.blockY} Z: ${senderLocation.blockZ}"
+            var message = "${ChatColor.GREEN}[TEAM] ${sender.displayName}${ChatColor.GRAY}> ${ChatColor.WHITE}X: ${senderLocation.blockX} Y: ${senderLocation.blockY} Z: ${senderLocation.blockZ}"
 
             team.entries.forEach {entryName ->
                 plugin.server.getPlayer(entryName)?.let {teammate ->
-                    if (teammate.location.world?.name == senderLocation.world?.name && teammate.displayName != sender.displayName) {
-                        val distance = teammate.location.distance(senderLocation).toInt()
-                        message = "$message ($distance blocks)"
-
-                        //TODO: MAYBE LOCALLY GLOW THE SENDER?
+                    if (teammate.displayName == sender.displayName) {
+                        teammate.sendMessage("$message")
                     }
-
-                    teammate.sendMessage("${ChatColor.GREEN}[TEAM] ${sender.displayName}${ChatColor.GRAY} > ${ChatColor.WHITE}$message")
+                    else if (teammate.location.world?.name == senderLocation.world?.name) {
+                        val distance = teammate.location.distance(senderLocation).toInt()
+                        //TODO: MAYBE LOCALLY GLOW THE SENDER?
+                        teammate.sendMessage("$message ($distance blocks)")
+                    }
+                    else {
+                        teammate.sendMessage("$message (${senderLocation.world?.name?: "Different world"})")
+                    }
                 }
             }
         }?: run {

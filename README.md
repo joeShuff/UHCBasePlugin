@@ -1,6 +1,10 @@
 # UHCBasePlugin
 UHCBase is a plugin for Spigot Minecraft servers to control a game of UHC (Ultra Hardcore).
 
+[<img src="resources/kofi.png"
+      alt="Support me on Ko-Fi"
+      height="80">](https://ko-fi.com/joeshuff) 
+
 # Installation
 Download the latest version for your minecraft version from the releases section. When later versions of Minecraft release, I will begin further development in that version only, so any bugs won't be fixed for older versions of Minecraft.
 
@@ -23,7 +27,9 @@ Check out the config options in [CONFIG.md](https://github.com/joeShuff/UHCBaseP
 This plugin supports some custom UHC gamemodes, information about these can be found in [GAMEMODES.md](https://github.com/joeShuff/UHCBasePlugin/blob/main/GAMEMODES.md)
 
 # Planned Features
-- Disabling attack cooldown option
+- ~~Pregeneration of chunks~~
+- Player heads on death + craft golden head
+- ~~Disabling attack cooldown option~~ 
 - Forcing surface at a set episode (will have countdown)
 - Clearing nether at a set episode (auto teleport will need to be safe guaranteed)
 - More gamemodes obviously

@@ -3,10 +3,8 @@ package joeshuff.plugins.uhcbase.commands.base
 import joeshuff.plugins.uhcbase.PositionsController
 import joeshuff.plugins.uhcbase.UHCBase
 import joeshuff.plugins.uhcbase.config.getConfigController
-import joeshuff.plugins.uhcbase.listeners.PlayerListener
 import joeshuff.plugins.uhcbase.timers.GameTimer
 import org.bukkit.ChatColor
-import org.bukkit.Sound
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender

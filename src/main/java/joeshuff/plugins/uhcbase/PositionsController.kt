@@ -26,6 +26,46 @@ class PositionsController(val plugin: UHCBase, private val respectTeams: Boolean
         }
     }
 
+    fun elimination(eliminated: String, prefix: String, displayName: String) {
+        aliveTeams.remove(eliminated)
+
+        val haveHas = if (respectTeams) "have" else "has"
+
+        if (respectTeams) {
+            plugin.server.broadcastMessage("${ChatColor.RED}Team ${prefix}${displayName}${ChatColor.RED} HAVE BEEN ELIMINATED")
+        }
+
+        when (aliveTeams.size) {
+            2 -> {
+                thirdPlace = prefix + displayName
+                plugin.server.broadcastMessage("$prefix$thirdPlace ${ChatColor.DARK_GRAY}$haveHas finished third!")
+            }
+            1 -> {
+                secondPlace = prefix + displayName
+                plugin.server.broadcastMessage("$prefix$secondPlace ${ChatColor.GRAY}$haveHas finished second!")
+
+                if (respectTeams) {
+                    val winningTeam = plugin.server.scoreboardManager?.mainScoreboard?.getTeam(aliveTeams[0])
+                    winningTeam?.let {
+                        firstPlace = winningTeam.prefix + winningTeam.displayName
+                        plugin.server.broadcastMessage("$prefix$firstPlace ${ChatColor.GOLD} $haveHas won!!!")
+
+                        VictoryTimer(plugin, true, firstPlace)
+                    }
+                } else {
+                    plugin.server.getPlayer(aliveTeams[0])?.let {winner ->
+                        val winningTeamPrefix = plugin.server.scoreboardManager?.mainScoreboard?.getEntryTeam(winner.name)?.prefix?: ""
+
+                        firstPlace = winningTeamPrefix + winner.displayName
+                        plugin.server.broadcastMessage("$prefix$firstPlace ${ChatColor.GOLD} $haveHas won!!!")
+
+                        VictoryTimer(plugin, false, firstPlace)
+                    }
+                }
+            }
+        }
+    }
+
     fun onPlayerDeath(deadPlayer: Player) {
         val scoreboard = plugin.server.scoreboardManager?.mainScoreboard ?: return
 
@@ -34,57 +74,13 @@ class PositionsController(val plugin: UHCBase, private val respectTeams: Boolean
 
             deadPlayersTeam?.let {eliminatedTeam ->
                 if (eliminatedTeam.allPlayersDead() && aliveTeams.contains(eliminatedTeam.name)) {
-                    aliveTeams.remove(eliminatedTeam.name)
-                    plugin.server.broadcastMessage("${ChatColor.RED}Team ${eliminatedTeam.prefix}${eliminatedTeam.displayName}${ChatColor.RED} HAS BEEN ELIMINATED")
-
-                    when (aliveTeams.size) {
-                        2 -> {
-                            thirdPlace = eliminatedTeam.prefix + eliminatedTeam.displayName
-                            plugin.server.broadcastMessage("$thirdPlace have finished third!")
-                        }
-                        1 -> {
-                            secondPlace = eliminatedTeam.prefix + eliminatedTeam.displayName
-                            plugin.server.broadcastMessage("$thirdPlace have finished second!")
-
-                            val winningTeam = scoreboard.getTeam(aliveTeams[0])
-                            winningTeam?.let {
-                                firstPlace = winningTeam.prefix + winningTeam.displayName
-                                plugin.server.broadcastMessage("$firstPlace have won!!!")
-
-                                VictoryTimer(plugin, true, firstPlace)
-                            }
-                        }
-                    }
-
+                    elimination(eliminatedTeam.name, eliminatedTeam.prefix, eliminatedTeam.displayName)
                 }
             }
         } else {
             if (aliveTeams.contains(deadPlayer.name)) {
-                aliveTeams.remove(deadPlayer.name)
-
                 val prefix = scoreboard.getEntryTeam(deadPlayer.name)?.prefix?: ""
-
-                plugin.server.broadcastMessage("$prefix${deadPlayer.displayName} ${ChatColor.RED}has been eliminated!")
-
-                when (aliveTeams.size) {
-                    2 -> {
-                        thirdPlace = prefix + deadPlayer.displayName
-                        plugin.server.broadcastMessage("$thirdPlace has finished third!")
-                    }
-                    1 -> {
-                        secondPlace = prefix + deadPlayer.displayName
-                        plugin.server.broadcastMessage("$thirdPlace has finished second!")
-
-                        plugin.server.getPlayer(aliveTeams[0])?.let {winner ->
-                            val winningTeamPrefix = scoreboard.getEntryTeam(winner.name)?.prefix?: ""
-
-                            firstPlace = winningTeamPrefix + winner.displayName
-                            plugin.server.broadcastMessage("$firstPlace has won!!!")
-
-                            VictoryTimer(plugin, true, firstPlace)
-                        }
-                    }
-                }
+                elimination(deadPlayer.name, prefix, deadPlayer.displayName)
             }
         }
     }
@@ -94,7 +90,7 @@ class PositionsController(val plugin: UHCBase, private val respectTeams: Boolean
             val entryPlayer = plugin.server.offlinePlayers.firstOrNull { it.name == entry }
 
             entryPlayer?.let { teamPlayer ->
-                plugin.livePlayerListener?.let { listener ->
+                plugin.liveGameListener?.let { listener ->
                     if (!listener.deadList.contains(teamPlayer.name) && listener.playingList.contains(teamPlayer.name)) {
                         return false
                     }

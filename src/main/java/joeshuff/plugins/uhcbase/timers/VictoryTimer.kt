@@ -5,6 +5,8 @@ import joeshuff.plugins.uhcbase.Constants.Companion.hubCentreY
 import joeshuff.plugins.uhcbase.Constants.Companion.hubCentreZ
 import joeshuff.plugins.uhcbase.Constants.Companion.hubWorldName
 import joeshuff.plugins.uhcbase.UHCBase
+import joeshuff.plugins.uhcbase.gamemodes.GamemodeController
+import joeshuff.plugins.uhcbase.utils.WorldUtils
 import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getPlayingWorlds
 import org.bukkit.*
 import org.bukkit.entity.EntityType
@@ -19,6 +21,8 @@ class VictoryTimer(val plugin: UHCBase, val teams: Boolean, val winner: String):
     var seconds = 0;
 
     init {
+        plugin.UHCVictoryLap = true
+
         players.clear()
 
         plugin.getPlayingWorlds().forEach {
@@ -67,31 +71,17 @@ class VictoryTimer(val plugin: UHCBase, val teams: Boolean, val winner: String):
                     }
                 }
                 if (player != null) {
-                    player.spawnParticle(Particle.NOTE, player.location, 100, 0.5, 1.0, 0.5, 2.0)
-                    playFirework(player, player.location)
+                    player.world.spawnParticle(Particle.NOTE, player.location, 100, 0.5, 1.0, 0.5, 2.0)
+                    playFirework(player)
                 }
             }
         } else {
-            for (player in Bukkit.getOnlinePlayers()) {
-                val world = Bukkit.getWorld(hubWorldName)
-                var loc: Location
-                if (world != null) {
-                    loc = Location(world, hubCentreX.toDouble(), hubCentreY.toDouble(), hubCentreZ.toDouble())
-                    player.teleport(loc)
-                    player.inventory.clear()
-                    player.inventory.boots = null
-                    player.inventory.leggings = null
-                    player.inventory.helmet = null
-                    player.inventory.chestplate = null
-                    player.gameMode = GameMode.SURVIVAL
-                }
-            }
             Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "stop-uhc")
             cancel()
         }
     }
 
-    fun playFirework(player: Player, loc: Location?) {
+    fun playFirework(player: Player) {
         //Spawn the Firework, get the FireworkMeta.
         val fw = player.world.spawnEntity(player.location, EntityType.FIREWORK) as Firework
         val fwm = fw.fireworkMeta
@@ -100,13 +90,13 @@ class VictoryTimer(val plugin: UHCBase, val teams: Boolean, val winner: String):
         val r = Random()
 
         //Get the type
-        val rt = r.nextInt(5) + 1
-        var type = FireworkEffect.Type.BALL
-        if (rt == 1) type = FireworkEffect.Type.BALL
-        if (rt == 2) type = FireworkEffect.Type.BALL_LARGE
-        if (rt == 3) type = FireworkEffect.Type.BURST
-        if (rt == 4) type = FireworkEffect.Type.CREEPER
-        if (rt == 5) type = FireworkEffect.Type.STAR
+        val type = listOf(
+                FireworkEffect.Type.BALL,
+                FireworkEffect.Type.BALL_LARGE,
+                FireworkEffect.Type.BURST,
+                FireworkEffect.Type.CREEPER,
+                FireworkEffect.Type.STAR)
+                .random()
 
         //Get our random colours
         val r1i = r.nextInt(17) + 1

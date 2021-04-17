@@ -16,10 +16,13 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
+import org.bukkit.scoreboard.Team
 import java.util.*
 import kotlin.math.roundToInt
 
 class GenerateLocationsCommand(val plugin: UHCBase): CommandExecutor {
+
+    class PlayerDestination(val player: Player, val location: Location)
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (sender is Player) {
@@ -68,10 +71,23 @@ class GenerateLocationsCommand(val plugin: UHCBase): CommandExecutor {
 
         val generatedLocations = checkLocs(minSpread, maxXZCoord, amountOfLocations)
 
-        plugin.server.broadcastMessage("${ChatColor.GOLD}Generated Locations")
+        val playerLocations = arrayListOf<PlayerDestination>()
 
+        (if (respectTeams) TeamsUtils.getOnlineTeams() else plugin.server.onlinePlayers).forEach {
+            val thisLocation = generatedLocations.removeAt(0)
+
+            if (it is Team) {
+                it.entries.mapNotNull { Bukkit.getPlayer(it) }.forEach {
+                    playerLocations.add(PlayerDestination(it, thisLocation))
+                }
+            } else if (it is Player) {
+                playerLocations.add(PlayerDestination(it, thisLocation))
+            }
+        }
+
+        plugin.server.broadcastMessage("${ChatColor.GOLD}Generated Locations")
         plugin.server.broadcastMessage("${ChatColor.GREEN}Beginning teleportations...")
-        TeleportingTimer(plugin, respectTeams, generatedLocations).runTaskTimer(plugin, 20, 20)
+        TeleportingTimer(plugin, playerLocations).runTaskTimer(plugin, 40, 20)
 
         return true
     }
@@ -86,7 +102,7 @@ class GenerateLocationsCommand(val plugin: UHCBase): CommandExecutor {
         return false
     }
 
-    private fun checkLocs(minSpread: Int, maxXZCoord: Int, amountOfLocations: Int): List<Location> {
+    private fun checkLocs(minSpread: Int, maxXZCoord: Int, amountOfLocations: Int): ArrayList<Location> {
         val locations = arrayListOf<Location>()
 
         for (locNumber in 0 until amountOfLocations) {
