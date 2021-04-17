@@ -1,6 +1,10 @@
 # UHCBasePlugin
 UHCBase is a plugin for Spigot Minecraft servers to control a game of UHC (Ultra Hardcore).
 
+[<img src="resources/kofi.png"
+      alt="Support me on Ko-Fi"
+      height="80">](https://ko-fi.com/joeshuff) 
+
 # Installation
 Download the latest version for your minecraft version from the releases section. When later versions of Minecraft release, I will begin further development in that version only, so any bugs won't be fixed for older versions of Minecraft.
 
