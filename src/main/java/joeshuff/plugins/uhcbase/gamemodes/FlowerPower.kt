@@ -8,6 +8,7 @@ import org.bukkit.block.Biome
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
+import org.bukkit.entity.ThrownPotion
 import org.bukkit.event.EventHandler
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
@@ -21,17 +22,66 @@ import org.bukkit.inventory.meta.SkullMeta
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
+import org.bukkit.util.Vector
 import java.util.*
 
 class FlowerPower(val plugin: JavaPlugin): Listener, GamemodeController {
 
+    val allMaterials = arrayListOf<Material>()
+
+    val DOUBLES = listOf(Material.ROSE_BUSH, Material.LILAC, Material.SUNFLOWER, Material.PEONY)
+
+    private val NOT = arrayListOf(Material.AIR,
+        Material.VOID_AIR,
+        Material.CAVE_AIR,
+        Material.LAVA,
+        Material.WATER,
+        Material.PISTON_HEAD,
+        Material.MOVING_PISTON,
+        Material.COCOA,
+        Material.END_PORTAL,
+        Material.NETHER_PORTAL,
+        Material.FROSTED_ICE,
+        Material.DEBUG_STICK,
+        Material.TRIPWIRE,
+        Material.TALL_SEAGRASS,
+        Material.TALL_GRASS,
+        Material.CARROTS,
+        Material.END_GATEWAY,
+        Material.WEEPING_VINES_PLANT,
+        Material.SWEET_BERRY_BUSH,
+        Material.REDSTONE_WIRE
+    )
+
+    val flowerTypes = listOf(
+        Material.DANDELION,
+        Material.ROSE_BUSH,
+        Material.BLUE_ORCHID,
+        Material.OXEYE_DAISY,
+        Material.POPPY,
+        Material.PEONY,
+        Material.CORNFLOWER,
+        Material.AZURE_BLUET,
+        Material.ORANGE_TULIP,
+        Material.PINK_TULIP,
+        Material.RED_TULIP,
+        Material.WHITE_TULIP,
+        Material.LILY_OF_THE_VALLEY,
+        Material.SUNFLOWER,
+        Material.LILAC,
+        Material.ALLIUM)
+
     override fun isEnabled(): Boolean {
         return plugin.getConfigController().loadConfigFile("modes")?.getBoolean("flower-power")?: false
+        return true
     }
 
     override fun onGameStart() {
         plugin.server.pluginManager.registerEvents(this, plugin)
         plugin.server.broadcastMessage("Gamemode §cF§aL§bO§6W§dE§eR §rPower §a§lEnabled")
+        allMaterials.addAll(Material.values())
+        allMaterials.removeAll(NOT)
+        allMaterials.removeAll(DOUBLES)
     }
 
     override fun onGameEnd() {
@@ -41,29 +91,8 @@ class FlowerPower(val plugin: JavaPlugin): Listener, GamemodeController {
     @EventHandler
     fun breakBlock(event: BlockBreakEvent) {
         val player = event.player
-        val pos = event.block.location
+        val pos = event.block.location.add(0.5, 0.0, 0.5)
         val brokenBlock = event.block
-
-        val flowerTypes = listOf(
-                Material.DANDELION,
-                Material.ROSE_BUSH,
-                Material.BLUE_ORCHID,
-                Material.OXEYE_DAISY,
-                Material.POPPY,
-                Material.CORNFLOWER,
-                Material.AZURE_BLUET,
-                Material.ORANGE_TULIP,
-                Material.PINK_TULIP,
-                Material.RED_TULIP,
-                Material.WHITE_TULIP,
-                Material.LILY_OF_THE_VALLEY,
-                Material.SUNFLOWER,
-                Material.LILAC,
-                Material.ALLIUM)
-
-        if (brokenBlock.biome == Biome.FLOWER_FOREST) {
-            return
-        }
 
         if (flowerTypes.contains(brokenBlock.type)) {
             val rnd = Random()
@@ -71,7 +100,10 @@ class FlowerPower(val plugin: JavaPlugin): Listener, GamemodeController {
 
             if (chosen > 2) {
                 try {
-                    player.world.dropItemNaturally(pos, getItem(player, pos))
+                    getItem(player, pos)?.let {
+                        player.world.dropItemNaturally(pos, it)
+                    }
+
                     event.isCancelled = true
                     pos.block.type = Material.AIR
                 } catch (e: Exception) {
@@ -86,30 +118,14 @@ class FlowerPower(val plugin: JavaPlugin): Listener, GamemodeController {
 
     @EventHandler
     fun blank(event: ItemSpawnEvent) {
-        val doubleHighs = listOf(Material.ROSE_BUSH, Material.LILAC, Material.SUNFLOWER)
-        if (doubleHighs.contains(event.entity.itemStack.type)) {
+        if (DOUBLES.contains(event.entity.itemStack.type)) {
             event.isCancelled = true
             event.location.block.type = Material.AIR
         }
     }
 
-    private val NOT = arrayListOf(Material.AIR,
-            Material.VOID_AIR,
-            Material.CAVE_AIR,
-            Material.LAVA,
-            Material.WATER,
-            Material.PISTON_HEAD,
-            Material.MOVING_PISTON,
-            Material.COCOA,
-            Material.END_PORTAL,
-            Material.NETHER_PORTAL,
-            Material.FROSTED_ICE
-    )
-
-    private fun getItem(player: Player, position: Location): ItemStack {
-        val rnd = Random()
-        val materials = Material::class.java.enumConstants
-        var randomMaterial = materials[getRandom(0, materials.size)] ?: return getItem(player, position)
+    private fun getItem(player: Player, position: Location): ItemStack? {
+        var randomMaterial = allMaterials.random()
 
         randomMaterial = fixMaterialIfNotValid(randomMaterial)?: return getItem(player, position)
 
@@ -121,20 +137,24 @@ class FlowerPower(val plugin: JavaPlugin): Listener, GamemodeController {
         val stack = ItemStack(randomMaterial, 1)
 
         if (stack.type == Material.LINGERING_POTION || stack.type == Material.SPLASH_POTION) {
-            val potionEffects = PotionEffectType.values()
-            val chosenType = potionEffects[getRandom(0, potionEffects.size - 1)]
+            val potionEffect = PotionEffectType.values().random()
             val meta = stack.itemMeta as PotionMeta
-            meta.addCustomEffect(PotionEffect(chosenType, 2000, 1, true, true), true)
+            meta.addCustomEffect(PotionEffect(potionEffect, 2000, 1, true, true), true)
             stack.itemMeta = meta
+
+            val potion = position.world?.spawnEntity(position, EntityType.SPLASH_POTION) as ThrownPotion
+            potion.velocity = Vector(0.0, 0.75, 0.0)
+            potion.item = stack
+            return null
         }
 
         plugin.logger.info("Material Chosen is " + stack.type.toString())
 
         if (stack.type == Material.ENCHANTED_BOOK) {
             var meta = stack.itemMeta as EnchantmentStorageMeta
-            val amountofEnchs = rnd.nextInt(3) + 1
+            val amountofEnchs = Random().nextInt(3) + 1
             for (i in 0 until amountofEnchs) {
-                meta = addEnchant(meta, rnd)
+                meta = addEnchant(meta)
             }
             stack.itemMeta = meta
         }
@@ -152,7 +172,7 @@ class FlowerPower(val plugin: JavaPlugin): Listener, GamemodeController {
 
         if (stack.type == Material.WRITTEN_BOOK) {
             val meta = stack.itemMeta as BookMeta
-            val pages = rnd.nextInt(3) + 1
+            val pages = Random().nextInt(3) + 1
             for (i in 0 until pages) {
                 meta.addPage(getPage())
             }
@@ -199,10 +219,9 @@ class FlowerPower(val plugin: JavaPlugin): Listener, GamemodeController {
         return Math.round(Math.random() * b + a).toInt()
     }
 
-    private fun addEnchant(meta: EnchantmentStorageMeta, rnd: Random): EnchantmentStorageMeta {
-        val enchantments = Enchantment.values()
-        val random = enchantments[getRandom(0, enchantments.size - 1)]
-        meta.addStoredEnchant(random, rnd.nextInt(3) + 1, true)
+    private fun addEnchant(meta: EnchantmentStorageMeta): EnchantmentStorageMeta {
+        val enchantment = Enchantment.values().random()
+        meta.addStoredEnchant(enchantment, Random().nextInt(3) + 1, true)
         return meta
     }
 
