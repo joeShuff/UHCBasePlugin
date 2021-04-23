@@ -1,24 +1,22 @@
 package joeshuff.plugins.uhcbase.commands.base
 
+import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.commands.notifyCorrectUsage
-import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getPlayingWorlds
-import org.bukkit.Bukkit
+import joeshuff.plugins.uhcbase.commands.notifyInvalidPermissions
+import joeshuff.plugins.uhcbase.utils.getPlayingWorlds
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
-import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabExecutor
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 
-class PVPToggleCommand(val plugin: JavaPlugin): TabExecutor {
+class PVPToggleCommand(val game: UHC): TabExecutor {
+
+    val plugin = game.plugin
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        if (sender is Player) {
-            if (!sender.isOp) {
-                sender.sendMessage("${ChatColor.RED}You do not have permissions to use this command.")
-                return true
-            }
+        if (sender is Player && !sender.isOp) {
+            return command.notifyInvalidPermissions(sender)
         }
 
         if (args.isEmpty()) return command.notifyCorrectUsage(sender)
@@ -41,6 +39,8 @@ class PVPToggleCommand(val plugin: JavaPlugin): TabExecutor {
     }
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
+        if (sender is Player && !sender.isOp) return emptyList()
+
         when (args[0].length) {
             0 -> return listOf("on", "off")
         }

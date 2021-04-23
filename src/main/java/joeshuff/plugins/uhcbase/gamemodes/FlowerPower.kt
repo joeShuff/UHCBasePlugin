@@ -1,10 +1,10 @@
 package joeshuff.plugins.uhcbase.gamemodes
 
+import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.config.getConfigController
 import org.bukkit.ChatColor
 import org.bukkit.Location
 import org.bukkit.Material
-import org.bukkit.block.Biome
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
@@ -19,13 +19,12 @@ import org.bukkit.inventory.meta.BookMeta
 import org.bukkit.inventory.meta.EnchantmentStorageMeta
 import org.bukkit.inventory.meta.PotionMeta
 import org.bukkit.inventory.meta.SkullMeta
-import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.util.Vector
 import java.util.*
 
-class FlowerPower(val plugin: JavaPlugin): Listener, GamemodeController {
+class FlowerPower(override val game: UHC): Listener, GamemodeController(game) {
 
     val allMaterials = arrayListOf<Material>()
 
@@ -73,18 +72,36 @@ class FlowerPower(val plugin: JavaPlugin): Listener, GamemodeController {
 
     override fun isEnabled(): Boolean {
         return plugin.getConfigController().loadConfigFile("modes")?.getBoolean("flower-power")?: false
-        return true
     }
 
-    override fun onGameStart() {
+    override fun gameTick() {}
+
+    override fun playerDeath(player: Player) {}
+
+    override fun onGameStateChange(newState: UHC.GAME_STATE) {
+        if (!isEnabled()) return
+
+        if (newState == UHC.GAME_STATE.IN_GAME) {
+            onGameStart()
+        }
+
+        if (newState == UHC.GAME_STATE.VICTORY_LAP) {
+            onGameEnd()
+        }
+    }
+
+    override fun onEpisodeChange(episodeNumber: Int) {}
+
+    fun onGameStart() {
         plugin.server.pluginManager.registerEvents(this, plugin)
         plugin.server.broadcastMessage("Gamemode §cF§aL§bO§6W§dE§eR §rPower §a§lEnabled")
+
         allMaterials.addAll(Material.values())
         allMaterials.removeAll(NOT)
         allMaterials.removeAll(DOUBLES)
     }
 
-    override fun onGameEnd() {
+    fun onGameEnd() {
         HandlerList.unregisterAll(this)
     }
 

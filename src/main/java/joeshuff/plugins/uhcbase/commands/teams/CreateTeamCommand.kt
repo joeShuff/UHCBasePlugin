@@ -1,22 +1,22 @@
 package joeshuff.plugins.uhcbase.commands.teams
 
+import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.commands.notifyCorrectUsage
-import joeshuff.plugins.uhcbase.utils.TeamsUtils
+import joeshuff.plugins.uhcbase.commands.notifyInvalidPermissions
+import joeshuff.plugins.uhcbase.utils.createTeamFor
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
-import org.bukkit.scoreboard.Team
 
-class CreateTeamCommand(val plugin: JavaPlugin): CommandExecutor {
+class CreateTeamCommand(val game: UHC): CommandExecutor {
+
+    val plugin = game.plugin
+
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        if (sender is Player) {
-            if (!sender.isOp) {
-                sender.sendMessage("${ChatColor.RED}You do not have permission to use this command!")
-                return true
-            }
+        if (sender is Player && !sender.isOp) {
+            return command.notifyInvalidPermissions(sender)
         }
 
         if (args.isEmpty()) {
@@ -32,7 +32,7 @@ class CreateTeamCommand(val plugin: JavaPlugin): CommandExecutor {
 
         val firstPlayer = args[0]
 
-        val newTeam = TeamsUtils.createTeamFor(scoreboard, firstPlayer)
+        val newTeam = createTeamFor(scoreboard, firstPlayer)
 
         args.forEach {playerToAdd ->
             newTeam.addEntry(playerToAdd)

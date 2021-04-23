@@ -1,40 +1,33 @@
 package joeshuff.plugins.uhcbase.commands.base
 
-import joeshuff.plugins.uhcbase.PositionsController
-import joeshuff.plugins.uhcbase.UHCBase
-import joeshuff.plugins.uhcbase.config.getConfigController
-import joeshuff.plugins.uhcbase.timers.GameTimer
+import joeshuff.plugins.uhcbase.UHC
+import joeshuff.plugins.uhcbase.commands.notifyInvalidPermissions
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 
-class StartUhcCommand(val plugin: UHCBase): CommandExecutor {
+class StartUhcCommand(val game: UHC): CommandExecutor {
+
+    val plugin = game.plugin
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        if (sender is Player) {
-            if (!sender.isOp) {
-                sender.sendMessage("${ChatColor.RED}You do not have permissions to use this command.")
-                return true
-            }
+        if (sender is Player && !sender.isOp) {
+            return command.notifyInvalidPermissions(sender)
         }
 
-        if (!plugin.UHCPrepped) {
+        if (game.state == UHC.GAME_STATE.PRE_GAME) {
             sender.sendMessage("${ChatColor.RED}UHC world has not been prepped. Do /prepuhc")
             return true
         }
 
-        if (plugin.UHCLive) {
+        if (game.state != UHC.GAME_STATE.PREPPED) {
             sender.sendMessage("${ChatColor.RED}UHC is already in progress")
             return true
         }
 
-        plugin.UHCLive = true
-
-        plugin.positionsController = PositionsController(plugin, plugin.getConfigController().TEAMS.get())
-
-        GameTimer(plugin).runTaskTimer(plugin, 0, 20);
+        game.gameState.onNext(UHC.GAME_STATE.IN_GAME)
 
         return true
     }

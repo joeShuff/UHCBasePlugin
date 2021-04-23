@@ -1,6 +1,6 @@
 name: UHCBase
 version: ${project.version}
-main: joeshuff.plugins.uhcbase.UHCBase
+main: joeshuff.plugins.uhcbase.UHCPlugin
 api-version: 1.15
 commands:
   worldtp:

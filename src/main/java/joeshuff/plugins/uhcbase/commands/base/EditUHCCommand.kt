@@ -1,6 +1,8 @@
 package joeshuff.plugins.uhcbase.commands.base
 
+import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.commands.notifyCorrectUsage
+import joeshuff.plugins.uhcbase.commands.notifyInvalidPermissions
 import joeshuff.plugins.uhcbase.config.InvalidParameterException
 import joeshuff.plugins.uhcbase.config.getConfigController
 import org.bukkit.Bukkit
@@ -10,14 +12,13 @@ import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.*
 
-class EditUHCCommand(val plugin: JavaPlugin) : TabExecutor {
+class EditUHCCommand(val game: UHC) : TabExecutor {
+
+    val plugin = game.plugin
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        if (sender is Player) {
-            if (!sender.isOp) {
-                sender.sendMessage("${ChatColor.RED}You do not have permission to use this command!")
-                return true
-            }
+        if (sender is Player && !sender.isOp) {
+            return command.notifyInvalidPermissions(sender)
         }
 
         if (args.isEmpty()) {
@@ -66,20 +67,29 @@ class EditUHCCommand(val plugin: JavaPlugin) : TabExecutor {
                         }
                     }
                 }
+
+                var rule = args[0].split("-").joinToString(" ").capitalize().trim()
+                val updatedMessage = "${ChatColor.GREEN}Rule ${ChatColor.RED.toString() + ChatColor.ITALIC.toString()}$rule ${ChatColor.RESET.toString() + ChatColor.GREEN}updated to: ${ChatColor.AQUA}${args[1]}"
+
+                if (it.announceChange()) {
+                    Bukkit.broadcastMessage(updatedMessage)
+                } else {
+                    sender.sendMessage(updatedMessage)
+                }
             }?: run {
                 sender.sendMessage("${ChatColor.RED}Cannot find config item for ${args[0]}")
                 return true
             }
-
-            var rule = args[0].split("-").joinToString(" ").capitalize().trim()
-
-            Bukkit.broadcastMessage("${ChatColor.GREEN}Rule ${ChatColor.RED.toString() + ChatColor.ITALIC.toString()}$rule ${ChatColor.RESET.toString() + ChatColor.GREEN}updated to: ${ChatColor.AQUA}${args[1]}")
         }
 
         return true
     }
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String> {
+        if (sender is Player) {
+            if (!sender.isOp) return emptyList()
+        }
+
         when (args.size) {
             1 -> {
                 return plugin.getConfigController().configItems.map { it.configKey }.filter { args[0] in it }

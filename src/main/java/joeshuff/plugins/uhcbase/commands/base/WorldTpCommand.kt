@@ -1,6 +1,8 @@
 package joeshuff.plugins.uhcbase.commands.base
 
+import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.commands.notifyCorrectUsage
+import joeshuff.plugins.uhcbase.commands.notifyInvalidPermissions
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Location
@@ -10,17 +12,15 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
-class WorldTpCommand(val plugin: JavaPlugin): CommandExecutor {
+class WorldTpCommand(val game: UHC): CommandExecutor {
+
+    val plugin = game.plugin
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        if (sender is Player) {
-            if (!sender.isOp) {
-                sender.sendMessage("${ChatColor.RED}This command is for operators only")
-                return true
-            }
+        if (sender is Player && !sender.isOp) {
+            return command.notifyInvalidPermissions(sender)
         } else {
-            sender.sendMessage("This command is for players only")
-            return true
+            return command.notifyInvalidPermissions(sender, "This command is for players only.")
         }
 
         if (args.isEmpty()) {

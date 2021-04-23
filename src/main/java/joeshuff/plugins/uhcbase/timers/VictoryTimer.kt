@@ -1,13 +1,7 @@
 package joeshuff.plugins.uhcbase.timers
 
-import joeshuff.plugins.uhcbase.Constants.Companion.hubCentreX
-import joeshuff.plugins.uhcbase.Constants.Companion.hubCentreY
-import joeshuff.plugins.uhcbase.Constants.Companion.hubCentreZ
-import joeshuff.plugins.uhcbase.Constants.Companion.hubWorldName
-import joeshuff.plugins.uhcbase.UHCBase
-import joeshuff.plugins.uhcbase.gamemodes.GamemodeController
-import joeshuff.plugins.uhcbase.utils.WorldUtils
-import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getPlayingWorlds
+import joeshuff.plugins.uhcbase.UHC
+import joeshuff.plugins.uhcbase.utils.getPlayingWorlds
 import org.bukkit.*
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Firework
@@ -15,14 +9,16 @@ import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import java.util.*
 
-class VictoryTimer(val plugin: UHCBase, val teams: Boolean, val winner: String): BukkitRunnable() {
+class VictoryTimer(val game: UHC, val teams: Boolean): BukkitRunnable() {
+
+    val plugin = game.plugin
+
+    val winner = game.positionsController?.firstPlace?: ""
 
     val players = arrayListOf<String>()
     var seconds = 0;
 
     init {
-        plugin.UHCVictoryLap = true
-
         players.clear()
 
         plugin.getPlayingWorlds().forEach {
@@ -51,12 +47,6 @@ class VictoryTimer(val plugin: UHCBase, val teams: Boolean, val winner: String):
         if (seconds % 5 == 0) {
             var cong = ChatColor.GOLD.toString() + "CONGRATULATIONS TO " + ChatColor.YELLOW
             for (p in players) {
-                var player = Bukkit.getServer().getPlayer(p)
-                for (p1 in Bukkit.getOnlinePlayers()) {
-                    if (p1.name == p) {
-                        player = p1
-                    }
-                }
                 cong = "$cong$p "
             }
             Bukkit.getServer().broadcastMessage(cong)
@@ -99,8 +89,6 @@ class VictoryTimer(val plugin: UHCBase, val teams: Boolean, val winner: String):
                 .random()
 
         //Get our random colours
-        val r1i = r.nextInt(17) + 1
-        val r2i = r.nextInt(17) + 1
         val c1 = Color.fromRGB(r.nextInt(255), r.nextInt(255), r.nextInt(255))
         val c2 = Color.fromRGB(r.nextInt(255), r.nextInt(255), r.nextInt(255))
 

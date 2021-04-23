@@ -1,57 +1,50 @@
 package joeshuff.plugins.uhcbase.listeners
 
 import joeshuff.plugins.uhcbase.Constants
-import joeshuff.plugins.uhcbase.UHCBase
+import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.config.getConfigController
-import joeshuff.plugins.uhcbase.datatracker.DataTracker
 import joeshuff.plugins.uhcbase.timers.KickTimer
-import joeshuff.plugins.uhcbase.utils.WorldUtils
-import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getPlayingWorlds
+import joeshuff.plugins.uhcbase.utils.getHubSpawnLocation
 import org.bukkit.*
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftEnderPearl
 import org.bukkit.entity.Arrow
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.*
-import org.bukkit.event.player.*
+import org.bukkit.event.player.PlayerItemConsumeEvent
+import org.bukkit.event.player.PlayerLoginEvent
+import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.event.player.PlayerTeleportEvent
 import org.bukkit.event.world.PortalCreateEvent
 import org.bukkit.potion.PotionEffectType
 import java.text.DecimalFormat
-import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class GameListener(val plugin: UHCBase): Listener {
+class GameListener(val game: UHC): Listener, Stoppable {
 
-    var deadList: ArrayList<String> = ArrayList()
-    var playingList: ArrayList<String> = ArrayList()
-
-    var kickMessages: MutableMap<String, String> = mutableMapOf()
+    val plugin = game.plugin
 
     var arrowSource: MutableMap<Int, Location> = mutableMapOf()
 
-    var kickTimer: KickTimer? = null
-
     init {
         plugin.server.pluginManager.registerEvents(this, plugin)
-        kickTimer = KickTimer(this)
-
-        plugin.server.onlinePlayers.forEach {
-            playingList.add(it.name)
-        }
     }
 
-    fun stop() {
+    override fun stop() {
         HandlerList.unregisterAll(this)
-        kickTimer?.stop()
     }
 
     @EventHandler
     fun logOut(event: PlayerQuitEvent) {
-        if (plugin.UHCLive && !deadList.contains(event.player.name)) {
-            kickTimer?.loggedOutList?.add(KickTimer.PlayerLogOut(event.player, (System.currentTimeMillis() / 1000).toInt()))
+        if (game.state == UHC.GAME_STATE.IN_GAME && !game.isPlayerDead(event.player)) {
+            game.kickTimer?.loggedOutList?.add(
+                KickTimer.PlayerLogOut(
+                    event.player,
+                    (System.currentTimeMillis() / 1000).toInt()
+                )
+            )
         }
     }
 
@@ -61,10 +54,12 @@ class GameListener(val plugin: UHCBase): Listener {
             var notWhitelistedMessage = "You are not whitelisted on this server."
 
             plugin.getConfigController().loadConfigFile("customize")?.let {
-                notWhitelistedMessage = it.getString("not_whitelisted_message")?: "You are not whitelisted on this server."
+                it.getString("not_whitelisted_message")?.let {
+                    notWhitelistedMessage = it
+                }
             }
 
-            kickMessages[event.player.name]?.let {kickMessage ->
+            game.kickMessages[event.player.name]?.let { kickMessage ->
                 var kickMessageTemplate = kickMessage
 
                 plugin.getConfigController().loadConfigFile("customize")?.let {
@@ -74,7 +69,7 @@ class GameListener(val plugin: UHCBase): Listener {
                             .replace("\\n", "\n")
                 }
 
-                event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, kickMessageTemplate)
+                event.disallow(PlayerLoginEvent.Result.KICK_OTHER, kickMessageTemplate)
                 return
             }?: run {
                 event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, notWhitelistedMessage)
@@ -82,7 +77,7 @@ class GameListener(val plugin: UHCBase): Listener {
             }
         }
 
-        if (deadList.contains(event.player.name)) {
+        if (game.isPlayerDead(event.player)) {
             event.player.canPickupItems = false
             plugin.server.scheduler.scheduleSyncDelayedTask(plugin, {
                 event.player.gameMode = GameMode.SPECTATOR
@@ -90,13 +85,17 @@ class GameListener(val plugin: UHCBase): Listener {
             }, 5)
         }
 
-        if (plugin.UHCLive) {
-            kickTimer?.loggedOutList?.removeIf { it.player.name == event.player.name }
+        if (game.state == UHC.GAME_STATE.IN_GAME) {
+            game.kickTimer.loggedOutList.removeIf { it.player.name == event.player.name }
         }
     }
 
     @EventHandler
     fun playerDeath(event: PlayerDeathEvent) {
+        if (game.state != UHC.GAME_STATE.IN_GAME) {
+            return
+        }
+
         val player = event.entity
         var kickReason = ""
         var deathMessage = ""
@@ -122,7 +121,7 @@ class GameListener(val plugin: UHCBase): Listener {
     }
 
     fun handlePlayerDeath(player: Player, deathMessage: String = "", kickMessage: String = "", offlineKill: Boolean = false) {
-        kickMessages[player.name] = kickMessage
+        game.kickMessages[player.name] = kickMessage
         Bukkit.broadcastMessage(deathMessage)
 
         val spawnLoc = player.location
@@ -131,7 +130,7 @@ class GameListener(val plugin: UHCBase): Listener {
             spawnLoc.y = 20.0
         }
 
-        plugin.gamemodes.filter { it.isEnabled() }.forEach { it.playerDeath(player) }
+        game.gamemodes.forEach { it.playerDeath(player) }
 
         player.setBedSpawnLocation(spawnLoc, true)
 
@@ -144,7 +143,7 @@ class GameListener(val plugin: UHCBase): Listener {
         if (!plugin.getConfigController().CAN_SPECTATE.get()) {
             if (plugin.server.getWorld(Constants.hubWorldName) != null) {
                 player.gameMode = GameMode.ADVENTURE
-                player.setBedSpawnLocation(WorldUtils.getHubSpawnLocation(), true)
+                player.setBedSpawnLocation(getHubSpawnLocation(), true)
 
                 if (player.bedSpawnLocation == null) {
                     player.gameMode = GameMode.SPECTATOR
@@ -152,15 +151,9 @@ class GameListener(val plugin: UHCBase): Listener {
             }
         }
 
-        if (plugin.UHCVictoryLap) {
-            return
-        }
-
         var killer = "Entity"
 
-        player.killer?.name?.let {
-
-        }?: run {
+        player.killer?.name?: run {
             val objective = player.server.scoreboardManager?.mainScoreboard?.getObjective("uhckills")
             objective?.let {
                 val score = it.getScore("" + ChatColor.AQUA + ChatColor.BOLD + "PvE:")
@@ -169,11 +162,11 @@ class GameListener(val plugin: UHCBase): Listener {
             }
         }
 
-        Bukkit.getOnlinePlayers().forEach {
-            if (deadList.contains(it.name)) {
-                player.showPlayer(it)
+        Bukkit.getOnlinePlayers().filter { it.uniqueId != player.uniqueId }.forEach {
+            if (game.isPlayerDead(it)) {
+                player.showPlayer(plugin, it)
             } else {
-                it.hidePlayer(player)
+                it.hidePlayer(plugin, player)
             }
         }
 
@@ -181,26 +174,20 @@ class GameListener(val plugin: UHCBase): Listener {
             if (!offlineKill) {
                 val nowSeconds = (System.currentTimeMillis() / 1000).toInt()
                 val secondsTilKick = plugin.getConfigController().KICK_SECONDS.get()
-                kickTimer?.kickUsersAt?.add(KickTimer.PlayerKick(player, nowSeconds + secondsTilKick))
+                game.kickTimer.kickUsersAt.add(KickTimer.PlayerKick(player, nowSeconds + secondsTilKick))
             }
 
             player.isWhitelisted = false
         }
 
-        deadList.add(player.name)
-        plugin.positionsController?.onPlayerDeath(player)
-    }
-
-    @EventHandler
-    fun changeWorld(event: PlayerChangedWorldEvent) {
-        plugin.getPlayingWorlds().forEach {
-            it.setGameRule(GameRule.NATURAL_REGENERATION, false)
-            it.difficulty = Difficulty.HARD
-        }
+        game.deadList.add(player.uniqueId.toString())
+        game.positionsController?.onPlayerDeath(player)
     }
 
     @EventHandler
     fun tpEvent(event: PlayerTeleportEvent) {
+        if (game.state != UHC.GAME_STATE.IN_GAME) return
+
         if (event.cause == PlayerTeleportEvent.TeleportCause.ENDER_PEARL) {
             if (!plugin.getConfigController().PEARL_DAMAGE.get()) {
                 event.isCancelled = true
@@ -215,7 +202,7 @@ class GameListener(val plugin: UHCBase): Listener {
 
         if (event is EntityDamageByEntityEvent) return
 
-        if (plugin.UHCVictoryLap) {
+        if (game.state != UHC.GAME_STATE.IN_GAME) {
             event.isCancelled = true
             return
         }
@@ -231,14 +218,9 @@ class GameListener(val plugin: UHCBase): Listener {
     }
 
     @EventHandler
-    fun eat(event: PlayerItemConsumeEvent) {
-        if (event.item.type == Material.GOLDEN_APPLE) {
-//            DataTracker.playerInfo[event.player.name]?.gappleConsumed()
-        }
-    }
-
-    @EventHandler
     fun arrowShot(event: EntitySpawnEvent) {
+        if (game.state != UHC.GAME_STATE.IN_GAME) return
+
         if (event.entity is Arrow) {
             arrowSource[event.entity.entityId] = event.location
         }
@@ -246,6 +228,9 @@ class GameListener(val plugin: UHCBase): Listener {
 
     @EventHandler
     fun arrowLand(event: ProjectileHitEvent) {
+
+        if (game.state != UHC.GAME_STATE.IN_GAME) return
+
         if (event.entity is Arrow) {
             val exec = Executors.newScheduledThreadPool(1)
             exec.schedule({ arrowSource.remove(event.entity.entityId) }, 1, TimeUnit.SECONDS)
@@ -254,7 +239,7 @@ class GameListener(val plugin: UHCBase): Listener {
 
     @EventHandler
     fun entityDamagedByEntity(event: EntityDamageByEntityEvent) {
-        if (plugin.UHCVictoryLap) {
+        if (game.state != UHC.GAME_STATE.IN_GAME) {
             event.isCancelled = true
             return
         }
@@ -287,13 +272,19 @@ class GameListener(val plugin: UHCBase): Listener {
     }
 
     @EventHandler
-    fun playerHeal(event: EntityRegainHealthEvent) {
-        if (plugin.getConfigController().ABSORBTION.get()) {
+    fun potionEffectEvent(event: EntityPotionEffectEvent) {
+        if (event.action == EntityPotionEffectEvent.Action.REMOVED || event.action == EntityPotionEffectEvent.Action.CLEARED) {
             return
         }
 
-        if (event.entity is Player) {
-            (event.entity as Player).removePotionEffect(PotionEffectType.ABSORPTION)
+        if (event.modifiedType == PotionEffectType.ABSORPTION && game.state == UHC.GAME_STATE.IN_GAME) {
+            if (plugin.getConfigController().ABSORBTION.get()) {
+                return
+            }
+
+            if (event.entity is Player) {
+                event.isCancelled = true
+            }
         }
     }
 }

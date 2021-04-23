@@ -1,12 +1,12 @@
 package joeshuff.plugins.uhcbase.commands.base
 
 import joeshuff.plugins.uhcbase.Constants
-import joeshuff.plugins.uhcbase.UHCBase
+import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.commands.notifyCorrectUsage
-import joeshuff.plugins.uhcbase.config.getConfigController
+import joeshuff.plugins.uhcbase.commands.notifyInvalidPermissions
 import joeshuff.plugins.uhcbase.timers.TeleportingTimer
-import joeshuff.plugins.uhcbase.utils.TeamsUtils
-import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getPlayingWorlds
+import joeshuff.plugins.uhcbase.utils.getOnlineTeams
+import joeshuff.plugins.uhcbase.utils.getPlayingWorlds
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Difficulty
@@ -15,21 +15,19 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scoreboard.Team
 import java.util.*
 import kotlin.math.roundToInt
 
-class GenerateLocationsCommand(val plugin: UHCBase): CommandExecutor {
+class GenerateLocationsCommand(val game: UHC): CommandExecutor {
+
+    val plugin = game.plugin
 
     class PlayerDestination(val player: Player, val location: Location)
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        if (sender is Player) {
-            if (!sender.isOp) {
-                sender.sendMessage("${ChatColor.RED}You do not have permissions to use this command.")
-                return true
-            }
+        if (sender is Player && !sender.isOp) {
+            return command.notifyInvalidPermissions(sender)
         }
 
         Bukkit.getWorld(Constants.UHCWorldName)?: run {
@@ -60,7 +58,7 @@ class GenerateLocationsCommand(val plugin: UHCBase): CommandExecutor {
             return true
         }
 
-        val amountOfLocations = (if (respectTeams) TeamsUtils.getOnlineTeams() else plugin.server.onlinePlayers).size
+        val amountOfLocations = (if (respectTeams) getOnlineTeams() else plugin.server.onlinePlayers).size
 
         if (amountOfLocations == 0) {
             plugin.server.broadcastMessage("${ChatColor.RED}Seems only 0 locations want to generate. use /loc to retry")
@@ -73,7 +71,7 @@ class GenerateLocationsCommand(val plugin: UHCBase): CommandExecutor {
 
         val playerLocations = arrayListOf<PlayerDestination>()
 
-        (if (respectTeams) TeamsUtils.getOnlineTeams() else plugin.server.onlinePlayers).forEach {
+        (if (respectTeams) getOnlineTeams() else plugin.server.onlinePlayers).forEach {
             val thisLocation = generatedLocations.removeAt(0)
 
             if (it is Team) {
@@ -87,7 +85,7 @@ class GenerateLocationsCommand(val plugin: UHCBase): CommandExecutor {
 
         plugin.server.broadcastMessage("${ChatColor.GOLD}Generated Locations")
         plugin.server.broadcastMessage("${ChatColor.GREEN}Beginning teleportations...")
-        TeleportingTimer(plugin, playerLocations).runTaskTimer(plugin, 40, 20)
+        TeleportingTimer(game, playerLocations).runTaskTimer(plugin, 40, 20)
 
         return true
     }

@@ -46,6 +46,8 @@ fall-damage : true
 pearl-damage : true
 absorbtion : true
 1-8-pvp: false
+op-contestant: true
+announce-far-arrow: false
 
 seconds-until-kick: 30
 can-spectate : true

@@ -1,25 +1,20 @@
 package joeshuff.plugins.uhcbase.timers
 
-import joeshuff.plugins.uhcbase.UHCBase
+import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.commands.base.GenerateLocationsCommand
 import joeshuff.plugins.uhcbase.config.getConfigController
-import joeshuff.plugins.uhcbase.utils.TeamsUtils
-import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getPlayingWorlds
-import org.bukkit.Bukkit
+import joeshuff.plugins.uhcbase.utils.getPlayingWorlds
 import org.bukkit.ChatColor
 import org.bukkit.Difficulty
-import org.bukkit.Location
-import org.bukkit.entity.Player
-import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
-import org.bukkit.scoreboard.Team
 import java.lang.Integer.min
 
-class TeleportingTimer(val plugin: UHCBase, val locations: ArrayList<GenerateLocationsCommand.PlayerDestination>): BukkitRunnable() {
+class TeleportingTimer(val game: UHC, val locations: ArrayList<GenerateLocationsCommand.PlayerDestination>): BukkitRunnable() {
+    val plugin = game.plugin
+
     val groupAmount = plugin.getConfigController().TELEPORT_SIZE.get()
 
-    var seconds = 0
+    var seconds = -1
 
     var amountTeleportingThisTime = 0
 

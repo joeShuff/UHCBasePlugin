@@ -1,10 +1,10 @@
 package joeshuff.plugins.uhcbase.timers
 
-import joeshuff.plugins.uhcbase.UHCBase
+import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.config.getConfigController
 import joeshuff.plugins.uhcbase.listeners.GameListener
-import joeshuff.plugins.uhcbase.utils.WorldUtils
-import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getPlayingWorlds
+import joeshuff.plugins.uhcbase.utils.getHubSpawnLocation
+import joeshuff.plugins.uhcbase.utils.getPlayingWorlds
 import joeshuff.plugins.uhcbase.utils.sendDefaultTabInfo
 import joeshuff.plugins.uhcbase.utils.showRules
 import org.bukkit.*
@@ -13,19 +13,30 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
 
-class GameTimer(
-        val plugin: UHCBase
-): BukkitRunnable() {
-    val permaEp: Int = plugin.config.getInt("perma-day-ep")
+class GameTimer(val game: UHC): BukkitRunnable() {
 
-    val shrinkEp: Int = plugin.config.getInt("shrink-ep")
-    val shrinkSize: Int = plugin.config.getInt("shrink-size")
-    val shrinkLength: Int = plugin.config.getInt("shrink-time")
+    val plugin = game.plugin
 
-    val graceEndEpisode: Int = plugin.config.getInt("grace-end-episode")
+    private val permaEp: Int
+      get() = plugin.getConfigController().getIntFromConfig("perma-day-ep")?: 0
 
-    val episodeTime: Int = plugin.config.getInt("episode-length")
-    val episodesEnabled = plugin.getConfigController().EPISODES_ENABLED.get()
+    private val shrinkEp: Int
+      get() = plugin.getConfigController().getIntFromConfig("shrink-ep")?: 0
+
+    private val shrinkSize: Int
+      get() = plugin.getConfigController().getIntFromConfig("shrink-size")?: 100
+
+    private val shrinkLength: Int
+      get() = plugin.getConfigController().getIntFromConfig("shrink-time")?: 20
+
+    private val graceEndEpisode: Int
+      get() = plugin.getConfigController().getIntFromConfig("grace-end-episode")?: 0
+
+    private val episodeTime: Int
+      get() = plugin.getConfigController().getIntFromConfig("episode-length")?: 20
+
+    private val episodesEnabled
+      get() = plugin.getConfigController().EPISODES_ENABLED.get()
 
     init {
         plugin.server.broadcastMessage("UHC Started${if (episodesEnabled) " with Episode length of $episodeTime minute(s)" else ""}")
@@ -43,11 +54,17 @@ class GameTimer(
         plugin.server.onlinePlayers.forEach {
             it.playSound(it.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 10f)
         }
+
+        game.gameState
+            .distinctUntilChanged()
+            .subscribe {
+                if (it == UHC.GAME_STATE.VICTORY_LAP) {
+                    onUHCStop()
+                }
+            }
     }
 
     var episodeNumber = 1
-
-    var effects = listOf(PotionEffect(PotionEffectType.SPEED, 1000000, 1, false, false), PotionEffect(PotionEffectType.INVISIBILITY, 1000000, 1, false, false), PotionEffect(PotionEffectType.JUMP, 1000000, 2, false, false), PotionEffect(PotionEffectType.HEALTH_BOOST, 1000000, 4, false, false), PotionEffect(PotionEffectType.INCREASE_DAMAGE, 1000000, 0, false, false))
 
     var startSeconds = 10
 
@@ -63,7 +80,7 @@ class GameTimer(
     }
 
     fun getFormattedRemaining(): String {
-        plugin.positionsController?.let {
+        game.positionsController?.let {
             return it.stillAlive()
         }?: return ""
     }
@@ -77,7 +94,7 @@ class GameTimer(
 
     fun onEpisodeChange(episode: Int) {
 
-        plugin.gamemodes.filter { it.isEnabled() }.forEach { it.onEpisodeChange(episode) }
+        game.gamemodes.forEach { it.onEpisodeChange(episode) }
 
         if (shrinkEp == episode) {
             plugin.server.broadcastMessage(ChatColor.GOLD.toString() + "======================")
@@ -126,39 +143,15 @@ class GameTimer(
         val gameOverMessage = plugin.getConfigController().loadConfigFile("customize")?.get("end_game_title")?: "CUSTOM UHC"
 
         Bukkit.getServer().broadcastMessage(ChatColor.GOLD.toString() + "====== " + gameOverMessage + ChatColor.GOLD + " ======")
-        Bukkit.getServer().broadcastMessage(ChatColor.GOLD.toString() + "    1st Place: " + plugin.positionsController?.firstPlace)
-        Bukkit.getServer().broadcastMessage(ChatColor.GRAY.toString() + "    2nd Place: " + plugin.positionsController?.secondPlace)
-        Bukkit.getServer().broadcastMessage(ChatColor.DARK_RED.toString() + "    3rd Place: " + plugin.positionsController?.thirdPlace)
+        Bukkit.getServer().broadcastMessage(ChatColor.GOLD.toString() + "    1st Place: " + game.positionsController?.firstPlace)
+        Bukkit.getServer().broadcastMessage(ChatColor.GRAY.toString() + "    2nd Place: " + game.positionsController?.secondPlace)
+        Bukkit.getServer().broadcastMessage(ChatColor.DARK_RED.toString() + "    3rd Place: " + game.positionsController?.thirdPlace)
         Bukkit.getServer().broadcastMessage(ChatColor.GOLD.toString() + "===============================")
-
-        plugin.server.onlinePlayers.forEach {
-            it.sendDefaultTabInfo(plugin)
-            it.inventory.clear()
-            it.enderChest.clear()
-
-            plugin.server.onlinePlayers.forEach { otherPlayer ->
-                otherPlayer.showPlayer(plugin, it)
-                it.showPlayer(plugin, otherPlayer)
-            }
-
-            it.teleport(WorldUtils.getHubSpawnLocation())
-            it.gameMode = GameMode.ADVENTURE
-        }
-
-        plugin.gamemodes.filter { it.isEnabled() }.forEach { it.onGameEnd() }
-
-        plugin.UHCVictoryLap = false
-        plugin.UHCPrepped = false
 
         this.cancel()
     }
 
     override fun run() {
-        if (!plugin.UHCLive) {
-            onUHCStop()
-            return
-        }
-
         if (startSeconds > -1) {
             val color = when {
                 startSeconds >= 6 -> ChatColor.DARK_RED
@@ -180,6 +173,7 @@ class GameTimer(
                 plugin.server.setWhitelist(true)
 
                 plugin.server.onlinePlayers.forEach {player ->
+                    //TODO: THIS NEEDS TO BE DONE EARLIER
                     player.isWhitelisted = true
 
                     if (plugin.getConfigController().EPISODES_ENABLED.get()) {
@@ -195,13 +189,10 @@ class GameTimer(
 
                     player.activePotionEffects.forEach { player.removePotionEffect(it.type) }
 
+                    //TODO: THIS REFRESHES THE HEALTH SCOREBOARD TO DISPLAY CORRECTLY, IS THERE A NEATER WAY?
                     player.damage(10.0)
                     player.addPotionEffect(PotionEffect(PotionEffectType.REGENERATION, 100, 10))
                 }
-
-                plugin.gamemodes.filter { it.isEnabled() }.forEach { it.onGameStart() }
-
-                plugin.server.pluginManager.getPermission("blockBefore.allowed")?.default = PermissionDefault.TRUE
 
                 val graceEnabled = plugin.getConfigController().GRACE_END_EPISODE.get() > 0
 
@@ -210,18 +201,16 @@ class GameTimer(
                     it.time = 0
                     it.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, true)
 
-                    if (graceEnabled) it.pvp = false
+                    it.pvp = !graceEnabled
                 }
 
                 onEpisodeChange(1)
-
-                plugin.liveGameListener = GameListener(plugin)
             }
         }
         else {
             seconds++
 
-            plugin.gamemodes.filter { it.isEnabled() }.forEach { it.gameTick() }
+            game.gamemodes.forEach { it.gameTick() }
 
             if (seconds == 60) {
                 minutes ++
