@@ -12,10 +12,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.*
-import org.bukkit.event.player.PlayerItemConsumeEvent
-import org.bukkit.event.player.PlayerLoginEvent
-import org.bukkit.event.player.PlayerQuitEvent
-import org.bukkit.event.player.PlayerTeleportEvent
+import org.bukkit.event.player.*
 import org.bukkit.event.world.PortalCreateEvent
 import org.bukkit.potion.PotionEffectType
 import java.text.DecimalFormat
@@ -46,6 +43,11 @@ class GameListener(val game: UHC): Listener, Stoppable {
                 )
             )
         }
+    }
+
+    @EventHandler
+    fun respawn(event: PlayerRespawnEvent) {
+        //TODO: RESPAWN AFTER END
     }
 
     @EventHandler
