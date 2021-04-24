@@ -1,19 +1,18 @@
 package joeshuff.plugins.uhcbase.timers
 
-import com.mojang.datafixers.kinds.Const
 import joeshuff.plugins.uhcbase.Constants
-import joeshuff.plugins.uhcbase.UHCBase
+import joeshuff.plugins.uhcbase.UHC
+import joeshuff.plugins.uhcbase.UHCPlugin
 import joeshuff.plugins.uhcbase.config.getConfigController
-import org.bukkit.Bukkit
 import org.bukkit.ChatColor
-import org.bukkit.Chunk
 import org.bukkit.World
 import org.bukkit.scheduler.BukkitRunnable
-import org.bukkit.scheduler.BukkitTask
 import java.lang.Exception
 import kotlin.math.*
 
-class PregenerationTimer(val plugin: UHCBase, val diameter: Int): BukkitRunnable() {
+class PregenerationTimer(val game: UHC, val diameter: Int): BukkitRunnable() {
+
+    val plugin = game.plugin
 
     var world: World? = null
     val maxChunkDist: Int = ceil(ceil(diameter / 16.0) / 2.0).toInt()
@@ -84,7 +83,7 @@ class PregenerationTimer(val plugin: UHCBase, val diameter: Int): BukkitRunnable
             plugin.server.broadcastMessage("${ChatColor.RED}WORLD PREGENERATION ABORTED ($perc% COMPLETED)")
         }
 
-        plugin.ongoingPregenerationTimer = null
+        game.ongoingPregenerationTimer = null
 
         try { super.cancel() } catch (e: Exception) {}
     }

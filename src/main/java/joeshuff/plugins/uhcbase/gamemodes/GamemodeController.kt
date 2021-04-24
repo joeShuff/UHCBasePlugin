@@ -1,19 +1,18 @@
 package joeshuff.plugins.uhcbase.gamemodes
 
+import joeshuff.plugins.uhcbase.UHC
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 
-interface GamemodeController {
+abstract class GamemodeController(open val game: UHC) {
+    val plugin = game.plugin
 
-    fun onGameStart() {}
+    abstract fun onGameStateChange(newState: UHC.GAME_STATE)
 
-    fun onGameEnd() {}
+    abstract fun onEpisodeChange(episodeNumber: Int)
 
-    fun onEpisodeChange(episodeNumber: Int) {}
+    abstract fun isEnabled(): Boolean
 
-    fun isEnabled(): Boolean
+    abstract fun gameTick()
 
-    fun gameTick() {}
-
-    fun playerDeath(player: Player) {}
+    abstract fun playerDeath(player: Player)
 }

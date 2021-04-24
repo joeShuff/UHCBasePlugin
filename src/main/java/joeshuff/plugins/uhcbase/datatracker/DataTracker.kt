@@ -1,11 +1,8 @@
 package joeshuff.plugins.uhcbase.datatracker
 
-import joeshuff.plugins.uhcbase.UHCBase
-import org.bukkit.Bukkit
-import org.bukkit.Material
-import java.util.*
+import joeshuff.plugins.uhcbase.UHCPlugin
 
-class DataTracker(plugin: UHCBase) {
+class DataTracker(plugin: UHCPlugin) {
 
 //    private var firstDamage = false
 //    var tableName = ""
