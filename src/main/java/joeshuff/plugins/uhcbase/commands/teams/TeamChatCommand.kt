@@ -1,20 +1,21 @@
 package joeshuff.plugins.uhcbase.commands.teams
 
+import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.commands.notifyCorrectUsage
-import joeshuff.plugins.uhcbase.utils.TeamsUtils
+import joeshuff.plugins.uhcbase.commands.notifyInvalidPermissions
 import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 
-class TeamChatCommand(val plugin: JavaPlugin): CommandExecutor {
+class TeamChatCommand(val game: UHC): CommandExecutor {
+
+    val plugin = game.plugin
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (sender !is Player) {
-            sender.sendMessage("${ChatColor.RED}This command is for players only")
-            return true
+            return command.notifyInvalidPermissions(sender, "This command is only for players.")
         }
 
         val scoreboard = plugin.server.scoreboardManager?.mainScoreboard

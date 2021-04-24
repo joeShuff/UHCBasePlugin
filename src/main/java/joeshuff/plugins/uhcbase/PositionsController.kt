@@ -1,14 +1,14 @@
 package joeshuff.plugins.uhcbase
 
-import joeshuff.plugins.uhcbase.timers.VictoryTimer
-import joeshuff.plugins.uhcbase.utils.TeamsUtils
+import joeshuff.plugins.uhcbase.utils.getOnlineTeams
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 import org.bukkit.scoreboard.Team
 
-
-class PositionsController(val plugin: UHCBase, private val respectTeams: Boolean) {
+class PositionsController(val game: UHC, private val respectTeams: Boolean) {
     private val aliveTeams = arrayListOf<String>()
+
+    val plugin = game.plugin
 
     var firstPlace: String = ""
     var secondPlace: String = ""
@@ -20,7 +20,7 @@ class PositionsController(val plugin: UHCBase, private val respectTeams: Boolean
 
     init {
         if (respectTeams) {
-            aliveTeams.addAll(TeamsUtils.getOnlineTeams().map { it.name })
+            aliveTeams.addAll(getOnlineTeams().map { it.name })
         } else {
             aliveTeams.addAll(plugin.server.onlinePlayers.map { it.name })
         }
@@ -49,8 +49,6 @@ class PositionsController(val plugin: UHCBase, private val respectTeams: Boolean
                     winningTeam?.let {
                         firstPlace = winningTeam.prefix + winningTeam.displayName
                         plugin.server.broadcastMessage("$prefix$firstPlace ${ChatColor.GOLD} $haveHas won!!!")
-
-                        VictoryTimer(plugin, true, firstPlace)
                     }
                 } else {
                     plugin.server.getPlayer(aliveTeams[0])?.let {winner ->
@@ -58,10 +56,10 @@ class PositionsController(val plugin: UHCBase, private val respectTeams: Boolean
 
                         firstPlace = winningTeamPrefix + winner.displayName
                         plugin.server.broadcastMessage("$prefix$firstPlace ${ChatColor.GOLD} $haveHas won!!!")
-
-                        VictoryTimer(plugin, false, firstPlace)
                     }
                 }
+
+                game.gameState.onNext(UHC.GAME_STATE.VICTORY_LAP)
             }
         }
     }
@@ -90,10 +88,8 @@ class PositionsController(val plugin: UHCBase, private val respectTeams: Boolean
             val entryPlayer = plugin.server.offlinePlayers.firstOrNull { it.name == entry }
 
             entryPlayer?.let { teamPlayer ->
-                plugin.liveGameListener?.let { listener ->
-                    if (!listener.deadList.contains(teamPlayer.name) && listener.playingList.contains(teamPlayer.name)) {
-                        return false
-                    }
+                if (!game.isPlayerDead(teamPlayer.uniqueId) && game.isContestant(teamPlayer.uniqueId)) {
+                    return false
                 }
             }
         }

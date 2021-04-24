@@ -1,12 +1,13 @@
 package joeshuff.plugins.uhcbase.timers
 
+import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.config.getConfigController
 import joeshuff.plugins.uhcbase.listeners.GameListener
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import java.util.*
 
-class KickTimer(val listener: GameListener): BukkitRunnable() {
+class KickTimer(val game: UHC): BukkitRunnable() {
 
     companion object {
         /** Seconds til logged out players are killed **/
@@ -23,7 +24,7 @@ class KickTimer(val listener: GameListener): BukkitRunnable() {
             val kickAt: Int
     )
 
-    val plugin = listener.plugin
+    val plugin = game.plugin
 
     var loggedOutList: ArrayList<PlayerLogOut> = arrayListOf()
 
@@ -31,6 +32,15 @@ class KickTimer(val listener: GameListener): BukkitRunnable() {
 
     init {
         runTaskTimer(plugin, 0, 20)
+
+        game.gameState
+            .distinctUntilChanged()
+            .subscribe {
+                if (it == UHC.GAME_STATE.IN_GAME) {
+                    loggedOutList.clear()
+                    kickUsersAt.clear()
+                }
+            }
     }
 
     fun stop() {
@@ -38,17 +48,14 @@ class KickTimer(val listener: GameListener): BukkitRunnable() {
     }
 
     override fun run() {
-        if (!plugin.UHCLive) {
-            cancel()
-            return
-        }
+        if (game.state != UHC.GAME_STATE.IN_GAME) return
 
         val nowSeconds = (System.currentTimeMillis() / 1000).toInt()
 
         kickUsersAt.forEach {
             if (it.player.isOnline && it.kickAt <= nowSeconds) {
                 var kickMessage = "Thanks for playing!"
-                val deathMessage = listener.kickMessages[it.player.name]?: ""
+                val deathMessage = game.kickMessages[it.player.name]?: ""
                 val playername = it.player.displayName
 
                 plugin.getConfigController().loadConfigFile("customize")?.let {
@@ -67,7 +74,7 @@ class KickTimer(val listener: GameListener): BukkitRunnable() {
         }
 
         val iterateLoggedOut = arrayListOf<PlayerLogOut>()
-        iterateLoggedOut.addAll(loggedOutList.filter { it.player.name !in listener.deadList })
+        iterateLoggedOut.addAll(loggedOutList.filter { !game.isPlayerDead(it.player) })
 
         iterateLoggedOut.forEach {
             val player = it.player
@@ -81,7 +88,7 @@ class KickTimer(val listener: GameListener): BukkitRunnable() {
                 player.inventory.clear()
 
                 val message = "${it.player.displayName} has been killed for inactivity"
-                listener.handlePlayerDeath(it.player, message, "You were killed for being logged off for too long.", true)
+                game.liveGameListener.handlePlayerDeath(it.player, message, "You were killed for being logged off for too long.", true)
             }
         }
     }

@@ -1,6 +1,10 @@
 # UHCBasePlugin
 UHCBase is a plugin for Spigot Minecraft servers to control a game of UHC (Ultra Hardcore).
 
+[<img src="resources/kofi.png"
+      alt="Support me on Ko-Fi"
+      height="80">](https://ko-fi.com/joeshuff) 
+
 # Installation
 Download the latest version for your minecraft version from the releases section. When later versions of Minecraft release, I will begin further development in that version only, so any bugs won't be fixed for older versions of Minecraft.
 
@@ -28,6 +32,8 @@ This plugin supports some custom UHC gamemodes, information about these can be f
 - ~~Disabling attack cooldown option~~ 
 - Forcing surface at a set episode (will have countdown)
 - Clearing nether at a set episode (auto teleport will need to be safe guaranteed)
+- No worldborder (still need spread limit)
+- Info in hub. Game info for operators and limited info for contestants
 - More gamemodes obviously
 
 # Terminology
@@ -49,6 +55,9 @@ Whilst you might not want a world border in your world it is crucial for this pl
 
 ### Spectating
 This plugin refers to "spectating" as a player being allowed into the live game worlds in spectator mode. If `can-spectate` is set to true, when a player dies they will be set into spectator mode to watch the rest of the game. (Unless kicked, see `seconds-until-kick`)
+
+### Contestants
+A contestant is someone who is playing the UHC, you can set operators to be contestants in the config item `op-contestant`.
 
 # Customise your UHC
 This UHC plugin comes with support for custom "skinning" so to speak. Take a look inside the `customize.yml` file and you will find you can change some of the messages that the players will see. All [color coding](https://minecraft.fandom.com/wiki/Formatting_codes) supported using the `§` character.

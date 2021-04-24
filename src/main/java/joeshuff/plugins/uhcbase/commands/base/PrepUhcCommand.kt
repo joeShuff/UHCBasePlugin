@@ -1,42 +1,41 @@
 package joeshuff.plugins.uhcbase.commands.base
 
 import joeshuff.plugins.uhcbase.Constants
-import joeshuff.plugins.uhcbase.PositionsController
-import joeshuff.plugins.uhcbase.UHCBase
+import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.commands.notifyCorrectUsage
+import joeshuff.plugins.uhcbase.commands.notifyInvalidPermissions
 import joeshuff.plugins.uhcbase.config.getConfigController
-import joeshuff.plugins.uhcbase.utils.TeamsUtils
-import joeshuff.plugins.uhcbase.utils.WorldUtils.Companion.getPlayingWorlds
-import joeshuff.plugins.uhcbase.utils.removeAllAdvancements
+import joeshuff.plugins.uhcbase.utils.*
+import org.apache.commons.lang.WordUtils
 import org.bukkit.*
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scoreboard.DisplaySlot
 import org.bukkit.scoreboard.RenderType
 
-class PrepUhcCommand(val plugin: JavaPlugin): CommandExecutor {
+class PrepUhcCommand(val game: UHC): CommandExecutor {
+
+    val plugin = game.plugin
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-
-        val uhcPlugin = plugin as UHCBase
-
-        if (sender is Player) {
-            if (!sender.isOp) {
-                sender.sendMessage("${ChatColor.RED}You do not have permissions to use this command.")
-                return true
-            }
+        if (sender is Player && !sender.isOp) {
+            return command.notifyInvalidPermissions(sender)
         }
 
         if (args.isEmpty()) return command.notifyCorrectUsage(sender)
 
+        if (game.state != UHC.GAME_STATE.PRE_GAME) {
+            sender.sendMessage(ChatColor.RED.toString() + "World already prepped!")
+            return true
+        }
+
         val teams = plugin.getConfigController().TEAMS.get()
 
-        if (teams && TeamsUtils.getOnlineTeams().isEmpty()) {
+        if (teams && getOnlineTeams().isEmpty()) {
             sender.sendMessage("${ChatColor.RED}The game is configured to use teams but there are no teams. Either set teams to false or generate some teams.")
             return true
         }
@@ -55,12 +54,7 @@ class PrepUhcCommand(val plugin: JavaPlugin): CommandExecutor {
             return true
         }
 
-        if (uhcPlugin.UHCPrepped) {
-            sender.sendMessage(ChatColor.RED.toString() + "World already prepped!")
-            return true
-        }
-
-        uhcPlugin.UHCPrepped = true
+        game.gameState.onNext(UHC.GAME_STATE.PREPPED)
 
         val worldBorderDiameter = Integer.valueOf(args[0])
         val worldCenter = Location(world, 0.0, (world.getHighestBlockAt(0, 0).y + 1).toDouble(), 0.0)
@@ -98,15 +92,9 @@ class PrepUhcCommand(val plugin: JavaPlugin): CommandExecutor {
             it.pvp = false
         }
 
+        plugin.setupScoreboard()
+
         plugin.server.broadcastMessage("${ChatColor.GREEN}World border set to $worldBorderDiameter blocks diameter.")
-
-        scoreboard.getObjective("health1")?.let { it.unregister() }
-        scoreboard.getObjective("health2")?.let { it.unregister() }
-        scoreboard.getObjective("kills")?.let { it.unregister() }
-
-        scoreboard.registerNewObjective("health1", "health", "listhealth", RenderType.HEARTS).displaySlot = DisplaySlot.PLAYER_LIST
-        scoreboard.registerNewObjective("health2", "health", "${ChatColor.RED}♥").displaySlot = DisplaySlot.BELOW_NAME
-        scoreboard.registerNewObjective("kills", "stat.playerKills", "${ChatColor.RED}-- Kills --").displaySlot = DisplaySlot.SIDEBAR
 
         plugin.server.dispatchCommand(plugin.server.consoleSender, "loc $teams")
 

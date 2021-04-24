@@ -3,6 +3,7 @@ package joeshuff.plugins.uhcbase.config
 class ConfigItem<T>(private val controller: ConfigController,
                     val configKey: String,
                     private val default: T,
+                    private val announceChange: Boolean = false,
                     private val minInt: Int? = null,
                     private val maxInt: Int? = null,
                     private val minDouble: Double? = null,
@@ -14,6 +15,8 @@ class ConfigItem<T>(private val controller: ConfigController,
     }
 
     fun getDefault(): T = default
+
+    fun announceChange() = announceChange
 
     fun set(value: Any) {
         controller.setToConfig(configKey, value)
