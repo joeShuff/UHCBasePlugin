@@ -1,5 +1,6 @@
 package joeshuff.plugins.uhcbase
 
+import io.reactivex.rxjava3.disposables.Disposable
 import joeshuff.plugins.uhcbase.listeners.Stoppable
 import org.bukkit.Bukkit
 import org.bukkit.plugin.java.JavaPlugin
@@ -7,6 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin
 class UHCPlugin: JavaPlugin() {
 
     val stoppables = arrayListOf<Stoppable>()
+    val disposables = arrayListOf<Disposable>()
 
     override fun onEnable() {
         try {
@@ -24,5 +26,6 @@ class UHCPlugin: JavaPlugin() {
 
     override fun onDisable() {
         stoppables.forEach { it.stop() }
+        disposables.forEach { it.dispose() }
     }
 }

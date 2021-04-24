@@ -57,11 +57,12 @@ class UHC(val plugin: UHCPlugin) {
 
         plugin.prepareWorlds()
 
-        gameState
+        plugin.disposables.add(gameState
             .distinctUntilChanged()
             .subscribe {
                 stateChange(it)
             }
+        )
 
         //Stop the daylight cycle
         for (world in plugin.server.worlds) {

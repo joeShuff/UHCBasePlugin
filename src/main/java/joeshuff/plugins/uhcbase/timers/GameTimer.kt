@@ -55,13 +55,14 @@ class GameTimer(val game: UHC): BukkitRunnable() {
             it.playSound(it.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 10f)
         }
 
-        game.gameState
+        game.plugin.disposables.add(game.gameState
             .distinctUntilChanged()
             .subscribe {
                 if (it == UHC.GAME_STATE.VICTORY_LAP) {
                     onUHCStop()
                 }
             }
+        )
     }
 
     var episodeNumber = 1
