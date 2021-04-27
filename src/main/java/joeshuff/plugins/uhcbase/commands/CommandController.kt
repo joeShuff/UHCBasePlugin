@@ -41,6 +41,9 @@ class CommandController(val game: UHC) {
 
         plugin.getCommand("genteams")?.setExecutor(RandomTeamsCommand(game))
 
+        plugin.getCommand("spectator")?.setExecutor(SpectatorCommand(game))
+        plugin.getCommand("spectator")?.tabCompleter = SpectatorCommand(game)
+
         plugin.getCommand("tchat")?.setExecutor(TeamChatCommand(game))
 
         plugin.getCommand("tloc")?.setExecutor(TeamLocationCommand(game))

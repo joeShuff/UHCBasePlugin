@@ -28,6 +28,10 @@ commands:
     aliases: [tl]
     description: Send your location to teammates.
     usage: /<command>
+  spectator:
+    aliases: [spec]
+    description: Toggle a player as a spectator or not
+    usage: /<command> <playername>
   testrole:
     description: Test role
     usage: /<command>
