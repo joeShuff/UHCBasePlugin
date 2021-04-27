@@ -47,8 +47,9 @@ class UHC(val plugin: UHCPlugin) {
 
     val gamemodes = arrayListOf<GamemodeController>()
 
-    //TODO: OK
-    val teams: Boolean = configController.TEAMS.get()
+    private var teamsStored = false
+    val teams: Boolean
+        get() = if (state == GAME_STATE.PRE_GAME) configController.TEAMS.get() else teamsStored
 
     init {
         configController.initialiseConfigFiles()

@@ -64,16 +64,13 @@ fun createTeams(game: UHC, sender: CommandSender, command: Command, args: Array<
         var playersPerTeam = args[0].toIntOrNull()?: -1
 
         if (playersPerTeam <= 0) {
-            sender.sendMessage("${ChatColor.RED}Invalid players per team. Try any integer over 0.")
-            return true
+            return command.notifyCorrectUsage(sender)
         }
 
         val players = arrayListOf<Player>()
 
-        Bukkit.getServer().onlinePlayers.forEach {
-            if (it.gameMode != GameMode.SPECTATOR) {
-                players.add(it)
-            }
+        game.getContestants().forEach {
+            players.add(it)
         }
 
         if (players.size < playersPerTeam) {
