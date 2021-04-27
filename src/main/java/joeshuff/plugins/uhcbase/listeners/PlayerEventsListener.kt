@@ -2,6 +2,8 @@ package joeshuff.plugins.uhcbase.listeners
 
 import joeshuff.plugins.uhcbase.Constants
 import joeshuff.plugins.uhcbase.UHC
+import joeshuff.plugins.uhcbase.utils.updatePlayerFlight
+import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -15,6 +17,8 @@ import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent
 import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.event.player.PlayerAdvancementDoneEvent
+import org.bukkit.event.player.PlayerCommandPreprocessEvent
+import org.bukkit.event.player.PlayerCommandSendEvent
 
 class PlayerEventsListener(val game: UHC): Listener, Stoppable {
 
@@ -66,6 +70,33 @@ class PlayerEventsListener(val game: UHC): Listener, Stoppable {
 
         if (event.entity.world.name == Constants.hubWorldName) {
             event.isCancelled = true
+        }
+    }
+
+    @EventHandler
+    fun opEvent(event: PlayerCommandPreprocessEvent) {
+        if (game.state != UHC.GAME_STATE.PRE_GAME) return
+
+        if (event.message.startsWith("/op")) {
+            val playername = event.message.replace("/op", "").trim()
+
+            Bukkit.getOnlinePlayers().firstOrNull { it.name == playername }?.let {
+                it.isOp = true
+                game.updatePlayerFlight()
+                event.isCancelled = true
+                event.player.sendMessage("${ChatColor.GREEN}Made $playername a server operator")
+            }
+        }
+
+        if (event.message.startsWith("/deop")) {
+            val playername = event.message.replace("/deop", "").trim()
+
+            Bukkit.getOnlinePlayers().firstOrNull { it.name == playername }?.let {
+                it.isOp = false
+                game.updatePlayerFlight()
+                event.isCancelled = true
+                event.player.sendMessage("${ChatColor.RED}Made $playername no longer a server operator")
+            }
         }
     }
 
