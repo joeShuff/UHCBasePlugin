@@ -1,7 +1,7 @@
 package joeshuff.plugins.uhcbase.utils
 
 import joeshuff.plugins.uhcbase.Constants
-import joeshuff.plugins.uhcbase.config.getConfigController
+import joeshuff.plugins.uhcbase.UHC
 import org.bukkit.*
 import org.bukkit.plugin.java.JavaPlugin
 import java.lang.Exception
@@ -23,12 +23,12 @@ fun getHubSpawnLocation(): Location {
     )
 }
 
-fun JavaPlugin.getPlayingWorlds(): List<World> {
-    return server.worlds.filter { it.name != Constants.hubWorldName }
+fun UHC.getPlayingWorlds(): List<World> {
+    return plugin.server.worlds.filter { it.name != Constants.hubWorldName }
 }
 
-fun JavaPlugin.getHubWorld(): World? {
-    return server.worlds.firstOrNull { it.name == Constants.hubWorldName }
+fun UHC.getHubWorld(): World? {
+    return plugin.server.worlds.firstOrNull { it.name == Constants.hubWorldName }
 }
 
 fun String.toSeed(): Long {
@@ -39,7 +39,7 @@ fun String.toSeed(): Long {
     }
 }
 
-fun JavaPlugin.prepareWorlds() {
+fun UHC.prepareWorlds() {
     Bukkit.createWorld(WorldCreator(Constants.hubWorldName).environment(World.Environment.NORMAL).type(WorldType.FLAT))
 
     getHubWorld()?.let {
@@ -47,7 +47,7 @@ fun JavaPlugin.prepareWorlds() {
         it.difficulty = Difficulty.PEACEFUL
     }
 
-    val hubSeedConfig = getConfigController().UHC_WORLD_SEED.get()
+    val hubSeedConfig = configController.getFromConfig("UHCSeed")?.toString()?: "none"
     var seed = hubSeedConfig.toSeed()
     if (hubSeedConfig == "none") {
         seed = Random.nextLong()

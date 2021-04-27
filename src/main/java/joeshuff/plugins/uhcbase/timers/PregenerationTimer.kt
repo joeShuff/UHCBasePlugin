@@ -2,8 +2,6 @@ package joeshuff.plugins.uhcbase.timers
 
 import joeshuff.plugins.uhcbase.Constants
 import joeshuff.plugins.uhcbase.UHC
-import joeshuff.plugins.uhcbase.UHCPlugin
-import joeshuff.plugins.uhcbase.config.getConfigController
 import org.bukkit.ChatColor
 import org.bukkit.World
 import org.bukkit.scheduler.BukkitRunnable
@@ -27,7 +25,7 @@ class PregenerationTimer(val game: UHC, val diameter: Int): BukkitRunnable() {
 
     var abortGeneration = false
 
-    val pregenDelay = plugin.getConfigController().PREGEN_TICKS.get()
+    val pregenDelay = game.configController.PRE_GEN_TICKS.get()
 
     class ChunkCoord(val x: Int, val z: Int)
 

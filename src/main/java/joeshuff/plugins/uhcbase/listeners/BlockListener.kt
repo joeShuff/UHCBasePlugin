@@ -1,22 +1,16 @@
 package joeshuff.plugins.uhcbase.listeners
 
-import joeshuff.plugins.uhcbase.Constants
 import joeshuff.plugins.uhcbase.UHC
-import joeshuff.plugins.uhcbase.config.ConfigController
-import joeshuff.plugins.uhcbase.config.getConfigController
-import joeshuff.plugins.uhcbase.datatracker.DataTracker
-import org.bukkit.ChatColor
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
-import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.block.LeavesDecayEvent
 import org.bukkit.event.inventory.BrewEvent
 import org.bukkit.inventory.ItemStack
-import org.bukkit.plugin.java.JavaPlugin
 import kotlin.random.Random
 
 class BlockListener(val game: UHC): Listener, Stoppable {
@@ -34,7 +28,7 @@ class BlockListener(val game: UHC): Listener, Stoppable {
     }
 
     private fun potentialAppleSpawn(location: Location): Boolean {
-        if (Random.nextDouble(0.0, 100.0) <= plugin.getConfigController().APPLE_RATE.get()) {
+        if (Random.nextDouble(0.0, 100.0) <= game.configController.APPLE_RATE.get()) {
             location.world?.dropItemNaturally(location, ItemStack(Material.APPLE, 1))
             return true
         }
@@ -42,20 +36,9 @@ class BlockListener(val game: UHC): Listener, Stoppable {
         return false
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     fun onBlockBreak(event: BlockBreakEvent) {
-        val player = event.player
-
-        if (player.world.name == Constants.hubWorldName && !player.isOp) {
-            player.sendMessage("${ChatColor.RED}The hub world is protected")
-            event.isCancelled = true
-            return
-        }
-
-        if (game.state != UHC.GAME_STATE.IN_GAME && !player.isOp) {
-            event.isCancelled = true
-            return
-        }
+        if (event.isCancelled) return
 
         if (event.block.type in leaves) {
             if (potentialAppleSpawn(event.block.location)) {
@@ -72,22 +55,9 @@ class BlockListener(val game: UHC): Listener, Stoppable {
             return
         }
 
-        potentialAppleSpawn(event.block.location)
-    }
-
-    @EventHandler
-    fun placeBlock(event: BlockPlaceEvent) {
-        val player = event.player
-
-        if (player.world.name == Constants.hubWorldName && !player.isOp) {
-            player.sendMessage("${ChatColor.RED}The hub world is protected")
+        if (potentialAppleSpawn(event.block.location)) {
             event.isCancelled = true
-            return
-        }
-
-        if (game.state != UHC.GAME_STATE.IN_GAME && !player.isOp) {
-            event.isCancelled = true
-            return
+            event.block.type = Material.AIR
         }
     }
 

@@ -1,16 +1,15 @@
 package joeshuff.plugins.uhcbase.utils
 
-import joeshuff.plugins.uhcbase.config.getConfigController
+import joeshuff.plugins.uhcbase.UHC
 import org.bukkit.ChatColor
 import org.bukkit.advancement.AdvancementProgress
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
-fun Player.sendDefaultTabInfo(plugin: JavaPlugin) {
-    val config = plugin.getConfigController().loadConfigFile("customize")
+fun Player.sendDefaultTabInfo(game: UHC) {
+    val config = game.configController.loadConfigFile("customize")
     config?.let {
         val header = it.getString("default_tab_header")
         val footer = it.getString("default_tab_footer")
@@ -23,8 +22,8 @@ fun Player.sendDefaultTabInfo(plugin: JavaPlugin) {
 * This method is going to show the player that is passed as a parameter
 * the game rules and game settings.
 */
-fun Player.showRules(plugin: JavaPlugin) {
-    val rules = File(plugin.dataFolder, "rules.yml")
+fun Player.showRules(game: UHC) {
+    val rules = File(game.plugin.dataFolder, "rules.yml")
 
     val rulesConfig: FileConfiguration = YamlConfiguration.loadConfiguration(rules)
 
@@ -39,13 +38,13 @@ fun Player.showRules(plugin: JavaPlugin) {
 
     message = "$message${ChatColor.BLUE}====- GAME DATA -==== _"
 
-    message = "$message${ChatColor.YELLOW}Apple Rates: ${ChatColor.AQUA}${plugin.getConfigController().APPLE_RATE.get()}% _".trimIndent()
-    message = "$message${ChatColor.YELLOW}Pearl Rates: ${ChatColor.AQUA}${plugin.getConfigController().PEARL_RATE.get()}% _".trimIndent()
-    message = "$message${ChatColor.YELLOW}Fall Damage: ${ChatColor.AQUA}${plugin.getConfigController().FALL_DAMAGE.get()} _".trimIndent()
-    message = "$message${ChatColor.YELLOW}Pearl Damage: ${ChatColor.AQUA}${plugin.getConfigController().PEARL_DAMAGE.get()} _".trimIndent()
-    message = "$message${ChatColor.YELLOW}Death Lightning: ${ChatColor.AQUA}${plugin.getConfigController().DEATH_LIGHTNING.get()} _".trimIndent()
-    message = "$message${ChatColor.YELLOW}Nether Enabled: ${ChatColor.AQUA}${plugin.getConfigController().NETHER_ENABLED.get()} _".trimIndent()
-    message = "$message${ChatColor.YELLOW}End Enabled: ${ChatColor.AQUA}${plugin.getConfigController().END_ENABLED.get()} _".trimIndent()
+    message = "$message${ChatColor.YELLOW}Apple Rates: ${ChatColor.AQUA}${game.configController.APPLE_RATE.get()}% _".trimIndent()
+    message = "$message${ChatColor.YELLOW}Pearl Rates: ${ChatColor.AQUA}${game.configController.PEARL_RATE.get()}% _".trimIndent()
+    message = "$message${ChatColor.YELLOW}Fall Damage: ${ChatColor.AQUA}${game.configController.FALL_DAMAGE.get()} _".trimIndent()
+    message = "$message${ChatColor.YELLOW}Pearl Damage: ${ChatColor.AQUA}${game.configController.PEARL_DAMAGE.get()} _".trimIndent()
+    message = "$message${ChatColor.YELLOW}Death Lightning: ${ChatColor.AQUA}${game.configController.DEATH_LIGHTNING.get()} _".trimIndent()
+    message = "$message${ChatColor.YELLOW}Nether Enabled: ${ChatColor.AQUA}${game.configController.NETHER_ENABLED.get()} _".trimIndent()
+    message = "$message${ChatColor.YELLOW}End Enabled: ${ChatColor.AQUA}${game.configController.END_ENABLED.get()} _".trimIndent()
     message = "$message${ChatColor.BLUE}====================="
 
     message.split(" _").forEach {
@@ -58,6 +57,33 @@ fun Player.removeAllAdvancements() {
         val advProgress: AdvancementProgress = getAdvancementProgress(it)
         advProgress.awardedCriteria.forEach {
             advProgress.revokeCriteria(it)
+        }
+    }
+}
+
+fun UHC.updatePlayerFlight() {
+    getAllPlayers().forEach {
+        it.allowFlight = isSpectator(it)
+    }
+}
+
+fun UHC.updateVisibility() {
+    val hideStates = listOf(UHC.GAME_STATE.PREPPED, UHC.GAME_STATE.IN_GAME)
+
+    getAllPlayers().forEach {first ->
+        getAllPlayers().filter { it.uniqueId != first.uniqueId }.forEach {second ->
+            if (state !in hideStates) {
+                first.showPlayer(plugin, second)
+                second.showPlayer(plugin, first)
+            } else {
+                if (isSpectator(second)) {
+                    second.canPickupItems = false
+                }
+
+                if (isContestant(first) && isSpectator(second)) {
+                    first.hidePlayer(plugin, second)
+                }
+            }
         }
     }
 }

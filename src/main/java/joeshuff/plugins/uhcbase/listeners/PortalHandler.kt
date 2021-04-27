@@ -1,7 +1,6 @@
 package joeshuff.plugins.uhcbase.listeners
 
 import joeshuff.plugins.uhcbase.UHC
-import joeshuff.plugins.uhcbase.config.getConfigController
 import org.bukkit.World
 import org.bukkit.event.EventHandler
 import org.bukkit.event.HandlerList
@@ -30,13 +29,13 @@ class PortalHandler(val game: UHC): Listener, Stoppable {
 
         if (event.from.world?.environment == World.Environment.NORMAL) {
             if (event.cause == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL) {
-                if (!plugin.getConfigController().NETHER_ENABLED.get()) {
+                if (!game.configController.NETHER_ENABLED.get()) {
                     event.isCancelled = true
                 }
             }
 
             if (event.cause == PlayerTeleportEvent.TeleportCause.END_PORTAL) {
-                if (!plugin.getConfigController().END_ENABLED.get()) {
+                if (!game.configController.END_ENABLED.get()) {
                     event.isCancelled = true
                 }
             }

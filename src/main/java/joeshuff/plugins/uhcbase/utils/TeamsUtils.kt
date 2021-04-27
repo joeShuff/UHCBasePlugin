@@ -1,7 +1,7 @@
 package joeshuff.plugins.uhcbase.utils
 
+import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.commands.notifyCorrectUsage
-import joeshuff.plugins.uhcbase.config.getConfigController
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
@@ -17,15 +17,17 @@ import kotlin.math.roundToInt
 /**
  * This method returns a list of teams that have at least one player online
  */
-fun getOnlineTeams(): List<Team> {
+fun UHC.getOnlineTeams(): List<Team> {
     val teams = arrayListOf<Team>()
 
     for (team in Bukkit.getServer().scoreboardManager?.mainScoreboard?.teams?: emptyList<Team>()) {
         var playersOnline = false
 
         for (player in team.entries) {
-            if (Bukkit.getServer().getPlayer(player) != null) {
-                playersOnline = true
+            Bukkit.getServer().getPlayer(player)?.let {
+                if (isContestant(it)) {
+                    playersOnline = true
+                }
             }
         }
 
@@ -42,7 +44,7 @@ fun getOnlineTeams(): List<Team> {
  *
  * returns true if valid input, false if not
  */
-fun createTeams(plugin: JavaPlugin, sender: CommandSender, command: Command, args: Array<out String>): Boolean {
+fun createTeams(game: UHC, sender: CommandSender, command: Command, args: Array<out String>): Boolean {
     if (args.size != 1) {
         return command.notifyCorrectUsage(sender)
     } else {
@@ -102,12 +104,12 @@ fun createTeams(plugin: JavaPlugin, sender: CommandSender, command: Command, arg
             }
 
             alreadyChosenStyles.add(color.toString())
-            plugin.logger.info("Color chosen after $colorAttempts attempts")
+            game.plugin.logger.info("Color chosen after $colorAttempts attempts")
 
             newTeam.color = color
             newTeam.displayName = "Team $teamId"
             newTeam.setCanSeeFriendlyInvisibles(true)
-            newTeam.setAllowFriendlyFire(plugin.getConfigController().FRIENDLY_FIRE.get())
+            newTeam.setAllowFriendlyFire(game.configController.FRIENDLY_FIRE.get())
 
             (0 until playersPerTeam).forEach {
                 val playersWithoutATeam = players.filter { board.getEntryTeam(it.name) == null }

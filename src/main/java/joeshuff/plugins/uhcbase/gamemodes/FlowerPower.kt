@@ -1,7 +1,6 @@
 package joeshuff.plugins.uhcbase.gamemodes
 
 import joeshuff.plugins.uhcbase.UHC
-import joeshuff.plugins.uhcbase.config.getConfigController
 import org.bukkit.ChatColor
 import org.bukkit.Location
 import org.bukkit.Material
@@ -71,7 +70,7 @@ class FlowerPower(override val game: UHC): Listener, GamemodeController(game) {
         Material.ALLIUM)
 
     override fun isEnabled(): Boolean {
-        return plugin.getConfigController().loadConfigFile("modes")?.getBoolean("flower-power")?: false
+        return game.configController.loadConfigFile("modes")?.getBoolean("flower-power")?: false
     }
 
     override fun gameTick() {}
@@ -230,10 +229,6 @@ class FlowerPower(override val game: UHC): Listener, GamemodeController(game) {
         }
 
         return material
-    }
-
-    fun getRandom(a: Int, b: Int): Int {
-        return Math.round(Math.random() * b + a).toInt()
     }
 
     private fun addEnchant(meta: EnchantmentStorageMeta): EnchantmentStorageMeta {

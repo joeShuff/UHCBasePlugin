@@ -37,7 +37,7 @@ class GenerateLocationsCommand(val game: UHC): CommandExecutor {
 
         if (args.isEmpty()) return command.notifyCorrectUsage(sender)
 
-        plugin.getPlayingWorlds().forEach {
+        game.getPlayingWorlds().forEach {
             it.difficulty = Difficulty.PEACEFUL
         }
 
@@ -58,7 +58,7 @@ class GenerateLocationsCommand(val game: UHC): CommandExecutor {
             return true
         }
 
-        val amountOfLocations = (if (respectTeams) getOnlineTeams() else plugin.server.onlinePlayers).size
+        val amountOfLocations = (if (respectTeams) game.getOnlineTeams() else game.getContestants()).size
 
         if (amountOfLocations == 0) {
             plugin.server.broadcastMessage("${ChatColor.RED}Seems only 0 locations want to generate. use /loc to retry")
@@ -71,7 +71,7 @@ class GenerateLocationsCommand(val game: UHC): CommandExecutor {
 
         val playerLocations = arrayListOf<PlayerDestination>()
 
-        (if (respectTeams) getOnlineTeams() else plugin.server.onlinePlayers).forEach {
+        (if (respectTeams) game.getOnlineTeams() else game.getContestants()).forEach {
             val thisLocation = generatedLocations.removeAt(0)
 
             if (it is Team) {

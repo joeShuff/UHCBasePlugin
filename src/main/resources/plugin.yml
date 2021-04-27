@@ -25,10 +25,11 @@ commands:
     description: Chat with your teammates
     usage: /<command> <message>
   tloc:
+    aliases: [tl]
     description: Send your location to teammates.
     usage: /<command>
-  tl:
-    description: Send your location to teammates.
+  testrole:
+    description: Test role
     usage: /<command>
   removeteam:
     description: Remove a team by name or player

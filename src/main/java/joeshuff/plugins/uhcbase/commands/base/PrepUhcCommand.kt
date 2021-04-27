@@ -4,9 +4,7 @@ import joeshuff.plugins.uhcbase.Constants
 import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.commands.notifyCorrectUsage
 import joeshuff.plugins.uhcbase.commands.notifyInvalidPermissions
-import joeshuff.plugins.uhcbase.config.getConfigController
 import joeshuff.plugins.uhcbase.utils.*
-import org.apache.commons.lang.WordUtils
 import org.bukkit.*
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -14,8 +12,6 @@ import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import org.bukkit.scoreboard.DisplaySlot
-import org.bukkit.scoreboard.RenderType
 
 class PrepUhcCommand(val game: UHC): CommandExecutor {
 
@@ -33,9 +29,9 @@ class PrepUhcCommand(val game: UHC): CommandExecutor {
             return true
         }
 
-        val teams = plugin.getConfigController().TEAMS.get()
+        val teams = game.configController.TEAMS.get()
 
-        if (teams && getOnlineTeams().isEmpty()) {
+        if (teams && game.getOnlineTeams().isEmpty()) {
             sender.sendMessage("${ChatColor.RED}The game is configured to use teams but there are no teams. Either set teams to false or generate some teams.")
             return true
         }
@@ -59,30 +55,35 @@ class PrepUhcCommand(val game: UHC): CommandExecutor {
         val worldBorderDiameter = Integer.valueOf(args[0])
         val worldCenter = Location(world, 0.0, (world.getHighestBlockAt(0, 0).y + 1).toDouble(), 0.0)
 
-        plugin.server.onlinePlayers.forEach {
-            it.teleport(worldCenter)
+        game.getAllPlayers().forEach { first ->
+            with (first) {
+                teleport(worldCenter)
+                removeAllAdvancements()
 
-            it.removeAllAdvancements()
+                inventory.clear()
+                health = 20.0
+                foodLevel = 20
+                enderChest.clear()
 
-            it.inventory.clear()
-            it.health = 20.0
-            it.foodLevel = 20
-            it.enderChest.clear()
+                exp = 0f
+                level = 0
 
-            it.exp = 0f
-            it.level = 0
+                gameMode = GameMode.SURVIVAL
 
-            it.gameMode = GameMode.SURVIVAL
-
-            it.addPotionEffect(PotionEffect(PotionEffectType.REGENERATION, 200, 100))
-            it.addPotionEffect(PotionEffect(PotionEffectType.SATURATION, 10, 10))
-            it.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 1000000, 100))
-            it.addPotionEffect(PotionEffect(PotionEffectType.SLOW, 1000000, 100))
-            it.addPotionEffect(PotionEffect(PotionEffectType.JUMP, 1000000, -100))
-            it.addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 1000000, 256))
+                if (game.isContestant(this)) {
+                    addPotionEffect(PotionEffect(PotionEffectType.REGENERATION, 200, 100))
+                    addPotionEffect(PotionEffect(PotionEffectType.SATURATION, 10, 10))
+                    addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 1000000, 100))
+                    addPotionEffect(PotionEffect(PotionEffectType.SLOW, 1000000, 100))
+                    addPotionEffect(PotionEffect(PotionEffectType.JUMP, 1000000, -100))
+                    addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 1000000, 256))
+                }
+            }
         }
 
-        plugin.getPlayingWorlds().forEach {
+        game.updatePlayerFlight()
+
+        game.getPlayingWorlds().forEach {
             it.worldBorder.center = worldCenter
             it.worldBorder.size = worldBorderDiameter.toDouble()
             it.worldBorder.warningDistance = 25

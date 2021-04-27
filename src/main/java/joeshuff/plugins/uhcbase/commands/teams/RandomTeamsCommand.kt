@@ -17,6 +17,6 @@ class RandomTeamsCommand(val game: UHC): CommandExecutor {
             return command.notifyInvalidPermissions(sender)
         }
 
-        return createTeams(plugin, sender, command, args)
+        return createTeams(game, sender, command, args)
     }
 }

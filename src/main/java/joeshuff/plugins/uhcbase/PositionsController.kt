@@ -20,9 +20,9 @@ class PositionsController(val game: UHC, private val respectTeams: Boolean) {
 
     init {
         if (respectTeams) {
-            aliveTeams.addAll(getOnlineTeams().map { it.name })
+            aliveTeams.addAll(game.getOnlineTeams().map { it.name })
         } else {
-            aliveTeams.addAll(plugin.server.onlinePlayers.map { it.name })
+            aliveTeams.addAll(game.getContestants().map { it.name })
         }
     }
 

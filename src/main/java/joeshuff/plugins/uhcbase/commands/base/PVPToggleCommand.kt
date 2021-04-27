@@ -33,7 +33,7 @@ class PVPToggleCommand(val game: UHC): TabExecutor {
             return command.notifyCorrectUsage(sender)
         }
 
-        plugin.getPlayingWorlds().forEach { it.pvp = pvpSet }
+        game.getPlayingWorlds().forEach { it.pvp = pvpSet }
 
         return true
     }

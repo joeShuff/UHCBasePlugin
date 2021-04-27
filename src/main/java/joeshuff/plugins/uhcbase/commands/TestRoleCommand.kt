@@ -1,17 +1,12 @@
-package joeshuff.plugins.uhcbase.commands.base
+package joeshuff.plugins.uhcbase.commands
 
 import joeshuff.plugins.uhcbase.UHC
-import joeshuff.plugins.uhcbase.commands.notifyInvalidPermissions
-import joeshuff.plugins.uhcbase.utils.showRules
-import org.bukkit.Bukkit
-import org.bukkit.ChatColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 
-class RulesCommand(val game: UHC): CommandExecutor {
+class TestRoleCommand(val game: UHC): CommandExecutor {
 
     val plugin = game.plugin
 
@@ -20,7 +15,8 @@ class RulesCommand(val game: UHC): CommandExecutor {
             return command.notifyInvalidPermissions(sender, "This command is for players only.")
         }
 
-        sender.showRules(game)
+        if (game.isSpectator(sender)) sender.sendMessage("You are a spectator.")
+        if (game.isContestant(sender)) sender.sendMessage("You are a contestant.")
 
         return true
     }

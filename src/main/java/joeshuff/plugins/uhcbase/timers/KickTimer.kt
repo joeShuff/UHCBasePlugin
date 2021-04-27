@@ -1,8 +1,6 @@
 package joeshuff.plugins.uhcbase.timers
 
 import joeshuff.plugins.uhcbase.UHC
-import joeshuff.plugins.uhcbase.config.getConfigController
-import joeshuff.plugins.uhcbase.listeners.GameListener
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import java.util.*
@@ -58,7 +56,7 @@ class KickTimer(val game: UHC): BukkitRunnable() {
                 val deathMessage = game.kickMessages[it.player.name]?: ""
                 val playername = it.player.displayName
 
-                plugin.getConfigController().loadConfigFile("customize")?.let {
+                game.configController.loadConfigFile("customize")?.let {
                     it.getString("kick_message")
                             ?.replace("{kickmessage}", deathMessage)
                             ?.replace("{playername}", playername)

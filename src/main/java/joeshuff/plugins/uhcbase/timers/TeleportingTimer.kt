@@ -2,8 +2,8 @@ package joeshuff.plugins.uhcbase.timers
 
 import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.commands.base.GenerateLocationsCommand
-import joeshuff.plugins.uhcbase.config.getConfigController
 import joeshuff.plugins.uhcbase.utils.getPlayingWorlds
+
 import org.bukkit.ChatColor
 import org.bukkit.Difficulty
 import org.bukkit.scheduler.BukkitRunnable
@@ -12,7 +12,7 @@ import java.lang.Integer.min
 class TeleportingTimer(val game: UHC, val locations: ArrayList<GenerateLocationsCommand.PlayerDestination>): BukkitRunnable() {
     val plugin = game.plugin
 
-    val groupAmount = plugin.getConfigController().TELEPORT_SIZE.get()
+    val groupAmount = game.configController.TELEPORT_SIZE.get()
 
     var seconds = -1
 
@@ -21,11 +21,11 @@ class TeleportingTimer(val game: UHC, val locations: ArrayList<GenerateLocations
     var TELEPORT_DELAY = 4
 
     init {
-        TELEPORT_DELAY = plugin.getConfigController().TELEPORT_DELAY.get()
+        TELEPORT_DELAY = game.configController.TELEPORT_DELAY.get()
 
         plugin.server.broadcastMessage("${ChatColor.GREEN}Teleporting ${locations.size} players in groups of $groupAmount")
 
-        plugin.getPlayingWorlds().forEach { it.difficulty = Difficulty.PEACEFUL }
+        game.getPlayingWorlds().forEach { it.difficulty = Difficulty.PEACEFUL }
     }
 
     override fun run() {

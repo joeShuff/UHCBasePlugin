@@ -2,7 +2,6 @@ package joeshuff.plugins.uhcbase.listeners
 
 import joeshuff.plugins.uhcbase.Constants
 import joeshuff.plugins.uhcbase.UHC
-import joeshuff.plugins.uhcbase.config.getConfigController
 import org.bukkit.Material
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
@@ -30,14 +29,6 @@ class EntityListener(val game: UHC): Listener, Stoppable {
     }
 
     @EventHandler
-    fun onAchieve(event: PlayerAdvancementDoneEvent) {
-        if (game.state != UHC.GAME_STATE.IN_GAME) {
-            //We are no longer able to stop an advancement from being achieved outside of the UHC
-            //However, all advancements are cleared when the UHC starts so it should be fine to ignore this
-        }
-    }
-
-    @EventHandler
     fun entitySpawn(event: EntitySpawnEvent) {
         if (event.location.world?.name == Constants.hubWorldName) {
             event.isCancelled = true
@@ -49,7 +40,7 @@ class EntityListener(val game: UHC): Listener, Stoppable {
         if (event.entityType == EntityType.ENDERMAN) {
             event.drops.removeIf { it.type == Material.ENDER_PEARL }
 
-            if (Random.nextInt(0, 100) <= plugin.getConfigController().PEARL_RATE.get()) {
+            if (Random.nextInt(0, 100) <= game.configController.PEARL_RATE.get()) {
                 event.drops.add(ItemStack(Material.ENDER_PEARL, 1))
             }
         }

@@ -21,10 +21,6 @@ class VictoryTimer(val game: UHC, val teams: Boolean): BukkitRunnable() {
     init {
         players.clear()
 
-        plugin.getPlayingWorlds().forEach {
-            it.pvp = false
-        }
-
         if (teams) {
             val team = Bukkit.getServer().scoreboardManager?.mainScoreboard?.getTeam(winner)
             team?.let {
@@ -54,19 +50,13 @@ class VictoryTimer(val game: UHC, val teams: Boolean): BukkitRunnable() {
 
         if (seconds < 40) {
             for (p in players) {
-                var player = Bukkit.getServer().getPlayer(p)
-                for (p1 in Bukkit.getOnlinePlayers()) {
-                    if (p1.name == p) {
-                        player = p1
-                    }
-                }
-                if (player != null) {
-                    player.world.spawnParticle(Particle.NOTE, player.location, 100, 0.5, 1.0, 0.5, 2.0)
-                    playFirework(player)
+                Bukkit.getPlayer(p)?.let {
+                    it.world.spawnParticle(Particle.NOTE, it.location, 100, 0.5, 1.0, 0.5, 2.0)
+                    playFirework(it)
                 }
             }
         } else {
-            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "stop-uhc")
+            game.gameState.onNext(UHC.GAME_STATE.POST_GAME)
             cancel()
         }
     }

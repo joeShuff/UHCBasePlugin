@@ -44,12 +44,12 @@ class CommandController(val game: UHC) {
         plugin.getCommand("tchat")?.setExecutor(TeamChatCommand(game))
 
         plugin.getCommand("tloc")?.setExecutor(TeamLocationCommand(game))
-        plugin.getCommand("tl")?.setExecutor(TeamLocationCommand(game))
 
         plugin.getCommand("removeteam")?.setExecutor(RemoveTeamCommand(game))
         plugin.getCommand("teamname")?.setExecutor(TeamNameCommand(game))
 
         plugin.getCommand("worldtest")?.setExecutor(WorldTestCommand(game))
+        plugin.getCommand("testrole")?.setExecutor(TestRoleCommand(game))
 
         plugin.getCommand("helpop")?.setExecutor(HelpOpCommand(game))
 

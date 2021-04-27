@@ -3,18 +3,13 @@ package joeshuff.plugins.uhcbase
 import io.reactivex.rxjava3.subjects.BehaviorSubject
 import joeshuff.plugins.uhcbase.commands.CommandController
 import joeshuff.plugins.uhcbase.config.ConfigController
-import joeshuff.plugins.uhcbase.config.getConfigController
-import joeshuff.plugins.uhcbase.gamemodes.FlowerPower
 import joeshuff.plugins.uhcbase.gamemodes.GamemodeController
 import joeshuff.plugins.uhcbase.listeners.*
 import joeshuff.plugins.uhcbase.timers.GameTimer
 import joeshuff.plugins.uhcbase.timers.KickTimer
 import joeshuff.plugins.uhcbase.timers.PregenerationTimer
 import joeshuff.plugins.uhcbase.timers.VictoryTimer
-import joeshuff.plugins.uhcbase.utils.cleanScoreboard
-import joeshuff.plugins.uhcbase.utils.getHubSpawnLocation
-import joeshuff.plugins.uhcbase.utils.prepareWorlds
-import joeshuff.plugins.uhcbase.utils.sendDefaultTabInfo
+import joeshuff.plugins.uhcbase.utils.*
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.GameRule
@@ -31,12 +26,15 @@ class UHC(val plugin: UHCPlugin) {
         POST_GAME()
     }
 
+    val configController = ConfigController(this)
+
     var gameState = BehaviorSubject.createDefault(GAME_STATE.PRE_GAME)
     val state
         get() = gameState.value
 
-    var deadList: ArrayList<String> = ArrayList()
-    var playingList: ArrayList<String> = ArrayList()
+    var deadList = arrayListOf<String>()
+    var playingList = arrayListOf<String>()
+    var spectatorList = arrayListOf<String>()
 
     var kickMessages: MutableMap<String, String> = mutableMapOf()
 
@@ -49,13 +47,14 @@ class UHC(val plugin: UHCPlugin) {
 
     val gamemodes = arrayListOf<GamemodeController>()
 
-    val teams: Boolean = plugin.getConfigController().TEAMS.get()
+    //TODO: OK
+    val teams: Boolean = configController.TEAMS.get()
 
     init {
-        ConfigController(plugin).initialiseConfigFiles()
+        configController.initialiseConfigFiles()
         Constants.loadConstantsFromConfig(plugin)
 
-        plugin.prepareWorlds()
+        prepareWorlds()
 
         plugin.disposables.add(gameState
             .distinctUntilChanged()
@@ -64,6 +63,8 @@ class UHC(val plugin: UHCPlugin) {
             }
         )
 
+        updatePlayerFlight()
+
         //Stop the daylight cycle
         for (world in plugin.server.worlds) {
             world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false)
@@ -71,8 +72,8 @@ class UHC(val plugin: UHCPlugin) {
 
         CommandController(this).registerCommands()
 
-        for (player in Bukkit.getServer().onlinePlayers) {
-            player.sendDefaultTabInfo(plugin)
+        for (player in getAllPlayers()) {
+            player.sendDefaultTabInfo(this)
         }
 
 //        gamemodes.add(FlowerPower(this))
@@ -82,6 +83,7 @@ class UHC(val plugin: UHCPlugin) {
             it.add(EntityListener(this))
             it.add(PortalHandler(this))
             it.add(PlayerJoinLeaveListener(this))
+            it.add(PlayerEventsListener(this))
             it.add(liveGameListener)
         }
     }
@@ -91,6 +93,8 @@ class UHC(val plugin: UHCPlugin) {
 
         gamemodes.forEach { it.onGameStateChange(state) }
 
+        updateVisibility()
+
         when (state) {
             GAME_STATE.PRE_GAME -> {
 
@@ -99,7 +103,7 @@ class UHC(val plugin: UHCPlugin) {
 
             }
             GAME_STATE.IN_GAME -> {
-                positionsController = PositionsController(this, plugin.getConfigController().TEAMS.get())
+                positionsController = PositionsController(this, configController.TEAMS.get())
                 GameTimer(this).runTaskTimer(plugin, 0, 20);
             }
             GAME_STATE.VICTORY_LAP -> {
@@ -110,13 +114,13 @@ class UHC(val plugin: UHCPlugin) {
 
                 //TODO: KICK ALL PLAYERS ON COMPLETE WITH THANKS FOR PLAYING
 
-                plugin.server.onlinePlayers.forEach { player ->
+                getAllPlayers().forEach { player ->
                     player.inventory.clear()
                     player.health = 20.0
                     player.foodLevel = 20
                     player.enderChest.clear()
 
-                    plugin.server.onlinePlayers.forEach { otherPlayer ->
+                    getAllPlayers().forEach { otherPlayer ->
                         otherPlayer.showPlayer(plugin, player)
                         player.showPlayer(plugin, otherPlayer)
                     }
@@ -126,7 +130,7 @@ class UHC(val plugin: UHCPlugin) {
                     player.teleport(getHubSpawnLocation())
                     player.gameMode = GameMode.ADVENTURE
 
-                    player.sendDefaultTabInfo(plugin)
+                    player.sendDefaultTabInfo(this)
                 }
 
                 gameState.onNext(GAME_STATE.PRE_GAME)
@@ -142,11 +146,21 @@ class UHC(val plugin: UHCPlugin) {
         return isPlayerDead(player.uniqueId)
     }
 
-    fun isContestant(uuid: UUID): Boolean {
-        return playingList.contains(uuid.toString())
+    fun getAllPlayers(): List<Player> {
+        return Bukkit.getOnlinePlayers().toList()
     }
 
-    fun isContestant(player: Player): Boolean {
-        return isContestant(player.uniqueId)
+    fun getContestants(): List<Player> {
+        return Bukkit.getOnlinePlayers().filter { isContestant(it) }.toList()
     }
+
+    fun getSpectators(): List<Player> {
+        return Bukkit.getOnlinePlayers().filter { isSpectator(it) }.toList()
+    }
+
+    fun isContestant(uuid: UUID) = !isSpectator(uuid)
+    fun isContestant(player: Player) = isContestant(player.uniqueId)
+
+    fun isSpectator(uuid: UUID) = spectatorList.contains(uuid.toString()) || (!configController.OP_CONTESTANT.get() && Bukkit.getOfflinePlayer(uuid).isOp)
+    fun isSpectator(player: Player) = isSpectator(player.uniqueId)
 }

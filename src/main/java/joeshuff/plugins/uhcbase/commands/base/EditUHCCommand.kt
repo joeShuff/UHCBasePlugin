@@ -3,14 +3,12 @@ package joeshuff.plugins.uhcbase.commands.base
 import joeshuff.plugins.uhcbase.UHC
 import joeshuff.plugins.uhcbase.commands.notifyCorrectUsage
 import joeshuff.plugins.uhcbase.commands.notifyInvalidPermissions
-import joeshuff.plugins.uhcbase.config.InvalidParameterException
-import joeshuff.plugins.uhcbase.config.getConfigController
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
-import org.bukkit.command.*
+import org.bukkit.command.Command
+import org.bukkit.command.CommandSender
+import org.bukkit.command.TabExecutor
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
-import java.util.*
 
 class EditUHCCommand(val game: UHC) : TabExecutor {
 
@@ -25,7 +23,7 @@ class EditUHCCommand(val game: UHC) : TabExecutor {
             return command.notifyCorrectUsage(sender)
         }
 
-        val configItem = plugin.getConfigController().getConfigItem(args[0])
+        val configItem = game.configController.getConfigItem(args[0])
 
         if (args.size == 1) {
             configItem?.let {
@@ -39,6 +37,11 @@ class EditUHCCommand(val game: UHC) : TabExecutor {
 
         if (args.size == 2) {
             configItem?.let {
+                if (!it.canSet(game)) {
+                    sender.sendMessage("${ChatColor.RED}Cannot change this item right now.")
+                    return true
+                }
+
                 val newvalue = args[1].toLowerCase()
 
                 when (it.getDefault()) {
@@ -92,10 +95,10 @@ class EditUHCCommand(val game: UHC) : TabExecutor {
 
         when (args.size) {
             1 -> {
-                return plugin.getConfigController().configItems.map { it.configKey }.filter { args[0] in it }
+                return game.configController.configItems.map { it.configKey }.filter { args[0] in it }
             }
             2 -> {
-                plugin.getConfigController().getConfigItem(args[0])?.let {
+                game.configController.getConfigItem(args[0])?.let {
                     if (it.get() is Boolean) {
                         return listOf("true", "false")
                     }
