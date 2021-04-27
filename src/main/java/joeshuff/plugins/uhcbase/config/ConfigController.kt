@@ -1,17 +1,14 @@
 package joeshuff.plugins.uhcbase.config
 
-import org.bukkit.Bukkit
-import org.bukkit.attribute.Attribute
+import joeshuff.plugins.uhcbase.UHC
+import joeshuff.plugins.uhcbase.config.items.*
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
-import org.bukkit.plugin.java.JavaPlugin
-import org.bukkit.potion.PotionEffectType
 import java.io.File
-import java.lang.Exception
 
-fun JavaPlugin.getConfigController() = ConfigController(this)
+class ConfigController(val game: UHC) {
 
-class ConfigController(val plugin: JavaPlugin) {
+    val plugin = game.plugin
 
     fun getFromConfig(key: String): Any? {
         plugin.config.load(File(plugin.dataFolder, "config.yml"))
@@ -29,55 +26,26 @@ class ConfigController(val plugin: JavaPlugin) {
         plugin.config.save(File(plugin.dataFolder, "config.yml"))
     }
 
-    //====GAME DATA=====
-    var UHC_WORLD_SEED = ConfigItem<String>(this, "UHCSeed", "none")
-
-    var APPLE_RATE = ConfigItem<Double>(this, "apple-rate", 0.5, announceChange = true, minDouble = 0.0, maxDouble = 100.0)
-
-    var PEARL_RATE = ConfigItem<Double>(this, "pearl-rate", 0.5, announceChange = true, minDouble = 0.0, maxDouble = 100.0)
-
-    var FALL_DAMAGE = ConfigItem(this, "fall-damage", true, announceChange = true)
-
-    var PEARL_DAMAGE = ConfigItem(this, "pearl-damage", true, announceChange = true)
-
-    var DEATH_LIGHTNING = ConfigItem(this, "death-lightning", true, announceChange = true)
-
-    var ABSORBTION = ConfigItem(this, "absorbtion", true, announceChange = true) {
-        if (!it) Bukkit.getOnlinePlayers().forEach { it.removePotionEffect(PotionEffectType.ABSORPTION) }
-    }
-
-    var TEAMS = ConfigItem(this, "teams", true)
-
-    var FRIENDLY_FIRE = ConfigItem(this, "friendly-fire", true, announceChange = true)
-
-    var KICK_SECONDS = ConfigItem(this, "seconds-until-kick", 30, minInt = 0)
-
-    var CAN_SPECTATE = ConfigItem(this, "can-spectate", true)
-
-    var NETHER_ENABLED = ConfigItem(this, "nether-enabled", true, announceChange = true)
-
-    var END_ENABLED = ConfigItem(this, "end-enabled", false, announceChange = true)
-
-    var EPISODES_ENABLED = ConfigItem(this, "show-episodes", true)
-
-    var GRACE_END_EPISODE = ConfigItem(this, "grace-end-episode", 2, minInt = 0)
-
-    var ONE_POINT_EIGHT_PVP = ConfigItem(this, "1-8-pvp", false, announceChange = true) {value ->
-        plugin.server.onlinePlayers.forEach {
-            it.getAttribute(Attribute.GENERIC_ATTACK_SPEED)?.baseValue = if (value) 16.0 else 4.0
-        }
-    }
-
-    var PREGEN_TICKS = ConfigItem(this, "pregen-ticks", 20, minInt = 1)
-
-    var TELEPORT_SIZE = ConfigItem(this, "teleport-size", 5, minInt = 1)
-
-    var TELEPORT_DELAY = ConfigItem(this, "teleport-delay", 4, minInt = 1)
-
-    var OP_CONTESTANT = ConfigItem(this, "op-contestant", true)
-
-    var ANNOUNCE_FAR_ARROW = ConfigItem(this, "announce-far-arrow", false, announceChange = true)
-    //=================
+    val APPLE_RATE = ConfigAppleRate(this)
+    val PEARL_RATE = ConfigPearlRate(this)
+    val FALL_DAMAGE = ConfigFallDamage(this)
+    val PEARL_DAMAGE = ConfigPearlDamage(this)
+    val DEATH_LIGHTNING = ConfigDeathLightning(this)
+    val ABSORBTION = ConfigAbsorbtion(this)
+    val TEAMS = ConfigTeams(this)
+    val FRIENDLY_FIRE = ConfigFriendlyFire(this)
+    val KICK_SECONDS = ConfigKickSeconds(this)
+    val CAN_SPECTATE = ConfigCanSpectate(this)
+    val NETHER_ENABLED = ConfigNetherEnabled(this)
+    val END_ENABLED = ConfigEndEnabled(this)
+    val EPISODES_ENABLED = ConfigEpisodesEnabled(this)
+    val GRACE_END_EPISODE = ConfigGraceEndEpisode(this)
+    val ONE_POINT_EIGHT_PVP = ConfigOnePointEightPvp(this)
+    val TELEPORT_DELAY = ConfigTeleportDelay(this)
+    val TELEPORT_SIZE = ConfigTeleportSize(this)
+    val PRE_GEN_TICKS = ConfigPregenTicks(this)
+    val OP_CONTESTANT = ConfigOpContestant(this)
+    val ANNOUNCE_FAR_ARROW = ConfigAnnounceFarArrow(this)
 
     val configItems = listOf(
         APPLE_RATE,
@@ -96,8 +64,8 @@ class ConfigController(val plugin: JavaPlugin) {
         GRACE_END_EPISODE,
         ONE_POINT_EIGHT_PVP,
         TELEPORT_DELAY,
-        PREGEN_TICKS,
         TELEPORT_SIZE,
+        PRE_GEN_TICKS,
         OP_CONTESTANT,
         ANNOUNCE_FAR_ARROW
     )

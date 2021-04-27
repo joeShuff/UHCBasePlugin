@@ -1,14 +1,20 @@
 package joeshuff.plugins.uhcbase.config
 
-class ConfigItem<T>(private val controller: ConfigController,
-                    val configKey: String,
-                    private val default: T,
-                    private val announceChange: Boolean = false,
-                    private val minInt: Int? = null,
-                    private val maxInt: Int? = null,
-                    private val minDouble: Double? = null,
-                    private val maxDouble: Double? = null,
-                    private val onSet: ((T) -> Unit)? = null) {
+import joeshuff.plugins.uhcbase.UHC
+
+interface ConfigCustomization {
+    fun canSet(game: UHC): Boolean = true
+}
+
+abstract class ConfigItem<T>(private val controller: ConfigController,
+                             val configKey: String,
+                             private val default: T,
+                             private val announceChange: Boolean = false,
+                             private val minInt: Int? = null,
+                             private val maxInt: Int? = null,
+                             private val minDouble: Double? = null,
+                             private val maxDouble: Double? = null,
+                             private val onSet: ((T) -> Unit)? = null): ConfigCustomization {
 
     fun get(): T {
         return controller.getFromConfig(configKey) as T?: default
@@ -18,9 +24,11 @@ class ConfigItem<T>(private val controller: ConfigController,
 
     fun announceChange() = announceChange
 
+    abstract fun onSet(value: T)
+
     fun set(value: Any) {
         controller.setToConfig(configKey, value)
-        onSet?.invoke(get())
+        onSet(get())
     }
 
     fun getLimits(): String {
