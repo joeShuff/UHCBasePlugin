@@ -2,6 +2,7 @@ package joeshuff.plugins.uhcbase.utils
 
 import joeshuff.plugins.uhcbase.UHC
 import org.bukkit.ChatColor
+import org.bukkit.Location
 import org.bukkit.advancement.AdvancementProgress
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
@@ -80,9 +81,93 @@ fun UHC.updateVisibility() {
                     second.canPickupItems = false
                 }
 
+                if (isContestant(first) && isContestant(second)) {
+                    if (isPlayerDead(first)) {
+                        if (isPlayerDead(second)) { //SECOND DEAD, FIRST DEAD
+                            first.showPlayer(plugin, second)
+                            second.showPlayer(plugin, first)
+                        } else {//SECOND ALIVE, FIRST DEAD
+                            first.showPlayer(plugin, second)
+                            second.hidePlayer(plugin, first)
+                        }
+                    } else {
+                        if (isPlayerDead(second)) { //SECOND DEAD, FIRST ALIVE
+                            first.showPlayer(plugin, second)
+                            second.showPlayer(plugin, first)
+                        } else { //SECOND ALIVE, FIRST ALIVE
+                            first.showPlayer(plugin, second)
+                            second.showPlayer(plugin, first)
+                        }
+                    }
+                }
+
                 if (isContestant(first) && isSpectator(second)) {
                     first.hidePlayer(plugin, second)
                 }
+            }
+        }
+    }
+}
+
+fun UHC.prepPlayers(worldCenter: Location) {
+    getAllPlayers().forEach { first ->
+        with (first) {
+            teleport(worldCenter)
+            removeAllAdvancements()
+
+            inventory.clear()
+            health = 20.0
+            foodLevel = 20
+            enderChest.clear()
+
+            exp = 0f
+            level = 0
+
+            gameMode = org.bukkit.GameMode.SURVIVAL
+
+            if (isContestant(this)) {
+                addPotionEffect(
+                    org.bukkit.potion.PotionEffect(
+                        org.bukkit.potion.PotionEffectType.REGENERATION,
+                        200,
+                        100
+                    )
+                )
+                addPotionEffect(
+                    org.bukkit.potion.PotionEffect(
+                        org.bukkit.potion.PotionEffectType.SATURATION,
+                        10,
+                        10
+                    )
+                )
+                addPotionEffect(
+                    org.bukkit.potion.PotionEffect(
+                        org.bukkit.potion.PotionEffectType.BLINDNESS,
+                        1000000,
+                        100
+                    )
+                )
+                addPotionEffect(
+                    org.bukkit.potion.PotionEffect(
+                        org.bukkit.potion.PotionEffectType.SLOW,
+                        1000000,
+                        100
+                    )
+                )
+                addPotionEffect(
+                    org.bukkit.potion.PotionEffect(
+                        org.bukkit.potion.PotionEffectType.JUMP,
+                        1000000,
+                        -100
+                    )
+                )
+                addPotionEffect(
+                    org.bukkit.potion.PotionEffect(
+                        org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE,
+                        1000000,
+                        256
+                    )
+                )
             }
         }
     }

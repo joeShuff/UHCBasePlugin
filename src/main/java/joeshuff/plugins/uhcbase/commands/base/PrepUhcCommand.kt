@@ -30,7 +30,6 @@ class PrepUhcCommand(val game: UHC): CommandExecutor {
         }
 
         val teams = game.configController.TEAMS.get()
-
         if (teams && game.getOnlineTeams().isEmpty()) {
             sender.sendMessage("${ChatColor.RED}The game is configured to use teams but there are no teams. Either set teams to false or generate some teams.")
             return true
@@ -39,65 +38,20 @@ class PrepUhcCommand(val game: UHC): CommandExecutor {
         val world = Bukkit.getWorld(Constants.UHCWorldName)
 
         if (world == null) {
-            sender.sendMessage("${ChatColor.RED}Unable to find UHC world : " + Constants.UHCWorldName)
+            sender.sendMessage("${ChatColor.RED}Unable to find UHC world: " + Constants.UHCWorldName)
             return true
         }
 
-        val scoreboard = plugin.server.scoreboardManager?.mainScoreboard
-
-        if (scoreboard == null) {
-            sender.sendMessage("${ChatColor.RED}Something went wrong obtaining the scoreboard")
-            return true
-        }
-
-        game.gameState.onNext(UHC.GAME_STATE.PREPPED)
-
-        val worldBorderDiameter = Integer.valueOf(args[0])
-        val worldCenter = Location(world, 0.0, (world.getHighestBlockAt(0, 0).y + 1).toDouble(), 0.0)
-
-        game.getAllPlayers().forEach { first ->
-            with (first) {
-                teleport(worldCenter)
-                removeAllAdvancements()
-
-                inventory.clear()
-                health = 20.0
-                foodLevel = 20
-                enderChest.clear()
-
-                exp = 0f
-                level = 0
-
-                gameMode = GameMode.SURVIVAL
-
-                if (game.isContestant(this)) {
-                    addPotionEffect(PotionEffect(PotionEffectType.REGENERATION, 200, 100))
-                    addPotionEffect(PotionEffect(PotionEffectType.SATURATION, 10, 10))
-                    addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 1000000, 100))
-                    addPotionEffect(PotionEffect(PotionEffectType.SLOW, 1000000, 100))
-                    addPotionEffect(PotionEffect(PotionEffectType.JUMP, 1000000, -100))
-                    addPotionEffect(PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 1000000, 256))
-                }
+        if (args.size == 1) {
+            args[0].toIntOrNull()?.let {
+                game.configController.BORDER_SIZE.set(it)
+            }?: run {
+                sender.sendMessage("${ChatColor.RED}Unable to set world border diameter to: ${ChatColor.YELLOW}${Constants.UHCWorldName}")
+                return true
             }
         }
 
-        game.updatePlayerFlight()
-
-        game.getPlayingWorlds().forEach {
-            it.worldBorder.center = worldCenter
-            it.worldBorder.size = worldBorderDiameter.toDouble()
-            it.worldBorder.warningDistance = 25
-            it.time = 0
-
-            it.setGameRule(GameRule.NATURAL_REGENERATION, false)
-            it.pvp = false
-        }
-
-        plugin.setupScoreboard()
-
-        plugin.server.broadcastMessage("${ChatColor.GREEN}World border set to $worldBorderDiameter blocks diameter.")
-
-        plugin.server.dispatchCommand(plugin.server.consoleSender, "loc $teams")
+        game.gameState.onNext(UHC.GAME_STATE.PREPPING)
 
         return true
     }

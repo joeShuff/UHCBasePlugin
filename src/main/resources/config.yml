@@ -6,6 +6,7 @@
 ### UHC FUNCTIONAL SETTINGS ###
 episode-length: 20
 perma-day-ep : 5
+border-size: 1000
 shrink-size : 100
 shrink-ep : 3
 shrink-time : 60

@@ -39,6 +39,18 @@ fun String.toSeed(): Long {
     }
 }
 
+fun UHC.prepWorlds(worldCenter: Location, worldBorderDiameter: Int) {
+    getPlayingWorlds().forEach {
+        it.worldBorder.center = worldCenter
+        it.worldBorder.size = worldBorderDiameter.toDouble()
+        it.worldBorder.warningDistance = 25
+        it.time = 0
+
+        it.setGameRule(GameRule.NATURAL_REGENERATION, false)
+        it.pvp = false
+    }
+}
+
 fun UHC.prepareWorlds() {
     Bukkit.createWorld(WorldCreator(Constants.hubWorldName).environment(World.Environment.NORMAL).type(WorldType.FLAT))
 

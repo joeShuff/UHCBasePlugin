@@ -10,9 +10,7 @@ import joeshuff.plugins.uhcbase.timers.KickTimer
 import joeshuff.plugins.uhcbase.timers.PregenerationTimer
 import joeshuff.plugins.uhcbase.timers.VictoryTimer
 import joeshuff.plugins.uhcbase.utils.*
-import org.bukkit.Bukkit
-import org.bukkit.GameMode
-import org.bukkit.GameRule
+import org.bukkit.*
 import org.bukkit.entity.Player
 import java.util.*
 
@@ -20,6 +18,7 @@ class UHC(val plugin: UHCPlugin) {
 
     enum class GAME_STATE {
         PRE_GAME(),
+        PREPPING(),
         PREPPED(),
         IN_GAME(),
         VICTORY_LAP(),
@@ -100,6 +99,32 @@ class UHC(val plugin: UHCPlugin) {
             GAME_STATE.PRE_GAME -> {
 
             }
+            GAME_STATE.PREPPING -> {
+                teamsStored = configController.TEAMS.get()
+
+                val world = Bukkit.getWorld(Constants.UHCWorldName) ?: run {
+                    getAdmins().forEach {
+                        it.sendMessage("${ChatColor.RED}Error prepping UHC. Can't find UHC world ${ChatColor.YELLOW}${Constants.UHCWorldName}")
+                    }
+
+                    return
+                }
+
+                val worldBorderDiameter = Integer.valueOf(configController.BORDER_SIZE.get())
+                val worldCenter = Location(world, 0.0, (world.getHighestBlockAt(0, 0).y + 1).toDouble(), 0.0)
+
+                prepPlayers(worldCenter)
+                updatePlayerFlight()
+
+                prepWorlds(worldCenter, worldBorderDiameter)
+
+                plugin.setupScoreboard()
+
+                plugin.server.broadcastMessage("${ChatColor.GREEN}World border set to $worldBorderDiameter blocks diameter.")
+                plugin.server.dispatchCommand(plugin.server.consoleSender, "loc $teams")
+
+                gameState.onNext(GAME_STATE.PREPPED)
+            }
             GAME_STATE.PREPPED -> {
 
             }
@@ -157,6 +182,10 @@ class UHC(val plugin: UHCPlugin) {
 
     fun getSpectators(): List<Player> {
         return Bukkit.getOnlinePlayers().filter { isSpectator(it) }.toList()
+    }
+
+    fun getAdmins(): List<Player> {
+        return Bukkit.getOnlinePlayers().filter { it.isOp }.toList()
     }
 
     fun isContestant(uuid: UUID) = !isSpectator(uuid)
