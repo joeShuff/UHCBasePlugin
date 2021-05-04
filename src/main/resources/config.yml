@@ -32,6 +32,7 @@ hubCentreZ : 0
 #### TEAMS SETTING ####
 teams : true
 friendly-fire: true
+customize-teams: true
 #######################
 
 ## NETHER PORTAL RADIUS ##

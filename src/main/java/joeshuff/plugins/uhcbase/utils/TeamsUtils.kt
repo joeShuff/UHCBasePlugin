@@ -73,6 +73,11 @@ fun createTeams(game: UHC, sender: CommandSender, command: Command, args: Array<
             players.add(it)
         }
 
+        if (playersPerTeam == 0 || players.size == 0) {
+            sender.sendMessage("${ChatColor.RED}Unable to create teams as there are no valid contestants online.")
+            return true
+        }
+
         if (players.size < playersPerTeam) {
             playersPerTeam = players.size
             Bukkit.getServer().broadcastMessage("${ChatColor.RED}Players per team was greater than online players - reduced team size to $playersPerTeam")

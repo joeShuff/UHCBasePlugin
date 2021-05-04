@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.HandlerList
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerQuitEvent
 
 class PlayerJoinLeaveListener(val game: UHC): Listener, Stoppable {
 
@@ -23,6 +24,15 @@ class PlayerJoinLeaveListener(val game: UHC): Listener, Stoppable {
 
     override fun stop() {
         HandlerList.unregisterAll(this)
+    }
+
+    @EventHandler
+    fun onPlayerLeave(event: PlayerQuitEvent) {
+        val player = event.player
+
+        if (game.state == UHC.GAME_STATE.IN_GAME && game.isSpectator(player)) {
+            event.quitMessage = null
+        }
     }
 
     @EventHandler
@@ -48,6 +58,10 @@ class PlayerJoinLeaveListener(val game: UHC): Listener, Stoppable {
         if (game.state == UHC.GAME_STATE.PRE_GAME && Bukkit.getWorld(Constants.hubWorldName) != null) {
             player.teleport(getHubSpawnLocation())
             player.gameMode = GameMode.ADVENTURE
+        }
+
+        if (game.state == UHC.GAME_STATE.IN_GAME && game.isSpectator(player)) {
+            event.joinMessage = null
         }
     }
 }

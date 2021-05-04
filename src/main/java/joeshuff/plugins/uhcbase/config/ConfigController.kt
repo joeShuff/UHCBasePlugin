@@ -46,6 +46,8 @@ class ConfigController(val game: UHC) {
     val PRE_GEN_TICKS = ConfigPregenTicks(this)
     val OP_CONTESTANT = ConfigOpContestant(this)
     val ANNOUNCE_FAR_ARROW = ConfigAnnounceFarArrow(this)
+    val BORDER_SIZE = ConfigBorderSize(this)
+    val CUSTOMIZE_TEAMS = ConfigCustomizeTeam(this)
 
     val configItems = listOf(
         APPLE_RATE,
@@ -67,7 +69,9 @@ class ConfigController(val game: UHC) {
         TELEPORT_SIZE,
         PRE_GEN_TICKS,
         OP_CONTESTANT,
-        ANNOUNCE_FAR_ARROW
+        ANNOUNCE_FAR_ARROW,
+        BORDER_SIZE,
+        CUSTOMIZE_TEAMS
     )
 
     val filesToCreate = listOf("rules.yml", "customize.yml", "modes.yml")

@@ -20,6 +20,11 @@ class TeamNameCommand(val game: UHC): CommandExecutor {
             return command.notifyInvalidPermissions(sender, "This command is for players only.")
         }
 
+        if (!game.configController.CUSTOMIZE_TEAMS.get() && !sender.isOp) {
+            sender.sendMessage("${ChatColor.RED}Admins have made team names not changeable.")
+            return true
+        }
+
         if (game.isPlayerDead(sender)) {
             sender.sendMessage("${ChatColor.RED}You can't change the team name when you are dead")
             return true

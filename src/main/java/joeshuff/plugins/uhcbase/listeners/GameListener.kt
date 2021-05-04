@@ -36,6 +36,8 @@ class GameListener(val game: UHC): Listener, Stoppable {
 
     @EventHandler
     fun logOut(event: PlayerQuitEvent) {
+        game.updateVisibility()
+
         if (game.state == UHC.GAME_STATE.IN_GAME && !game.isPlayerDead(event.player) && game.isContestant(event.player)) {
             game.kickTimer?.loggedOutList?.add(
                 KickTimer.PlayerLogOut(
@@ -48,7 +50,10 @@ class GameListener(val game: UHC): Listener, Stoppable {
 
     @EventHandler
     fun respawn(event: PlayerRespawnEvent) {
-        //TODO: RESPAWN AFTER END
+        //RESPAWN AFTER GAME END TELEPORTS TO HUB (game ends -> back to pregame)
+        if (game.state == UHC.GAME_STATE.PRE_GAME) {
+            event.respawnLocation = getHubSpawnLocation()
+        }
     }
 
     @EventHandler
@@ -104,6 +109,8 @@ class GameListener(val game: UHC): Listener, Stoppable {
         val player = event.entity
         var kickReason = ""
         var deathMessage = ""
+
+        if (!game.isContestant(player) && !game.isPlayerDead(player)) return
 
         event.deathMessage?.let {
             deathMessage = it
@@ -167,6 +174,9 @@ class GameListener(val game: UHC): Listener, Stoppable {
             }
         }
 
+        game.deadList.add(player.uniqueId.toString())
+        game.updateVisibility()
+
         game.getAllPlayers().filter { it.uniqueId != player.uniqueId }.forEach {
             if (game.isPlayerDead(it)) {
                 player.showPlayer(plugin, it)
@@ -185,7 +195,6 @@ class GameListener(val game: UHC): Listener, Stoppable {
             player.isWhitelisted = false
         }
 
-        game.deadList.add(player.uniqueId.toString())
         game.positionsController?.onPlayerDeath(player)
     }
 
