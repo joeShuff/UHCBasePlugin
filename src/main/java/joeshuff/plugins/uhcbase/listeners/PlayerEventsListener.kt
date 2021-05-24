@@ -41,32 +41,12 @@ class PlayerEventsListener(val game: UHC): Listener, Stoppable {
     }
 
     /**
-     * This event is to stop spectators damaging contestants
-     */
-    @EventHandler
-    fun playerDamagePlayerEvent(event: EntityDamageByEntityEvent) {
-        if (event.damager is Player && event.entity is Player) {
-            val damager = event.damager as Player
-
-            if (game.isSpectator(damager)) {
-                event.isCancelled = true
-                return
-            }
-        }
-    }
-
-    /**
-     * This event stops spectators from receiving damage during the game and any damage from being received in the hub
+     * This event stops any damage from being received in the hub
      */
     @EventHandler
     fun playerDamageEvent(event: EntityDamageEvent) {
+        if (event.isCancelled) return
         if (event.entity !is Player) return
-        val player = event.entity as Player
-
-        if (game.state == UHC.GAME_STATE.IN_GAME && game.isSpectator(player)) {
-            event.isCancelled = true
-            return
-        }
 
         if (event.entity.world.name == Constants.hubWorldName) {
             event.isCancelled = true
@@ -101,18 +81,12 @@ class PlayerEventsListener(val game: UHC): Listener, Stoppable {
     }
 
     /**
-     * This event stops spectators from suffering hunger changes
+     * This event stops players in the hub from suffering hunger changes
      */
     @EventHandler
     fun foodChange(event: FoodLevelChangeEvent) {
+        if (event.isCancelled) return
         if (event.entity !is Player) return
-
-        val player = event.entity as Player
-
-        if (game.state == UHC.GAME_STATE.IN_GAME && game.isSpectator(player)) {
-            event.isCancelled = true
-            return
-        }
 
         if (event.entity.world.name == Constants.hubWorldName) {
             event.isCancelled = true
@@ -125,12 +99,8 @@ class PlayerEventsListener(val game: UHC): Listener, Stoppable {
      */
     @EventHandler
     fun placeBlock(event: BlockPlaceEvent) {
+        if (event.isCancelled) return
         val player = event.player
-
-        if (game.state == UHC.GAME_STATE.IN_GAME && game.isSpectator(player)) {
-            event.isCancelled = true
-            return
-        }
 
         if (player.world.name == Constants.hubWorldName && !player.isOp) {
             player.sendMessage("${ChatColor.RED}The hub world is protected")
@@ -150,12 +120,8 @@ class PlayerEventsListener(val game: UHC): Listener, Stoppable {
      */
     @EventHandler(priority = EventPriority.HIGH)
     fun onBlockBreak(event: BlockBreakEvent) {
+        if (event.isCancelled) return
         val player = event.player
-
-        if (game.state == UHC.GAME_STATE.IN_GAME && game.isSpectator(player)) {
-            event.isCancelled = true
-            return
-        }
 
         if (player.world.name == Constants.hubWorldName && !player.isOp) {
             player.sendMessage("${ChatColor.RED}The hub world is protected")
@@ -166,22 +132,6 @@ class PlayerEventsListener(val game: UHC): Listener, Stoppable {
         if (game.state != UHC.GAME_STATE.IN_GAME && !player.isOp) {
             event.isCancelled = true
             return
-        }
-    }
-
-    /**
-     * This event prevents entites from targeting spectators
-     */
-    @EventHandler
-    fun targetPlayer(event: EntityTargetLivingEntityEvent) {
-        if (event.target == null) return
-
-        if (event.target is Player) {
-            val player = event.target as Player
-            if (game.isSpectator(player)) {
-                event.isCancelled = true
-                return
-            }
         }
     }
 }

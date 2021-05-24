@@ -84,6 +84,8 @@ class UHC(val plugin: UHCPlugin) {
             it.add(PortalHandler(this))
             it.add(PlayerJoinLeaveListener(this))
             it.add(PlayerEventsListener(this))
+            it.add(SpectatorEvents(this))
+            it.add(WorldListener(this))
             it.add(liveGameListener)
         }
     }
